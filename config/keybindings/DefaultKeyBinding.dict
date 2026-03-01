@@ -1,0 +1,9 @@
+{
+    /* Page Up/Down: move cursor instead of just scrolling (Windows behavior) */
+    "\UF72C" = "pageUp:";
+    "\UF72D" = "pageDown:";
+
+    /* Shift+Page Up/Down: select while paging */
+    "$\UF72C" = "pageUpAndModifySelection:";
+    "$\UF72D" = "pageDownAndModifySelection:";
+}
