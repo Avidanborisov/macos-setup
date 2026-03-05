@@ -8,7 +8,7 @@ This project contains all the configuration files and a comprehensive setup guid
 
 | File | Purpose | System Location |
 |------|---------|-----------------|
-| `config/karabiner/karabiner.json` | Key remapping (16 rules + per-device mods) | `~/.config/karabiner/karabiner.json` |
+| `config/karabiner/karabiner.json` | Key remapping (18 rules + per-device mods) | `~/.config/karabiner/karabiner.json` |
 | `config/rectangle/RectangleConfig.json` | Window snapping (Win+Arrows) | Import via Rectangle UI |
 | `config/keybindings/DefaultKeyBinding.dict` | Page Up/Down cursor movement | `~/Library/KeyBindings/DefaultKeyBinding.dict` |
 | `config/ghostty/config` | Ghostty terminal config (tmux autostart) | `~/.config/ghostty/config` |

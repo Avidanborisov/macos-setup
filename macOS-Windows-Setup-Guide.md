@@ -14,10 +14,11 @@ Based on [this blog post](https://imoskvin.com/blog/macos-like-windows/).
 4. [Rectangle — Window Snapping](#4-rectangle--window-snapping)
 5. [AltTab — Window Switching](#5-alttab--window-switching)
 6. [Page Up / Page Down — Cursor Movement](#6-page-up--page-down--cursor-movement)
-7. [Scroll Direction](#7-scroll-direction)
-8. [VS Code](#8-vs-code)
-9. [Keyboard Cheat Sheet](#9-keyboard-cheat-sheet)
-10. [Quick Setup Script](#10-quick-setup-script)
+7. [Red X Button — Quit on Close](#7-red-x-button--quit-on-close)
+8. [Scroll Direction](#8-scroll-direction)
+9. [VS Code](#9-vs-code)
+10. [Keyboard Cheat Sheet](#10-keyboard-cheat-sheet)
+11. [Quick Setup Script](#11-quick-setup-script)
 
 ---
 
@@ -31,6 +32,7 @@ brew install --cask rectangle            # Window snapping
 brew install --cask ghostty              # Terminal emulator
 brew install --cask alt-tab              # Alt+Tab window switcher
 brew install --cask unnaturalscrollwheels # Reverse mouse scroll only
+brew install --cask redquits             # Red X button quits the app (Windows behavior)
 ```
 
 ### Login Items
@@ -41,6 +43,7 @@ Add to **System Settings → General → Login Items**:
 - AltTab
 - UnnaturalScrollWheels
 - Ghostty
+- RedQuits
 
 ### Permissions
 
@@ -76,9 +79,9 @@ export LC_TIME=en_US.UTF-8
 ### Keyboard Shortcuts (via defaults)
 
 ```bash
-# Disable Input Source switching on Ctrl+Space (we use Alt+Space for Spotlight instead)
+# Enable Input Source switching on Ctrl+Space (used by Win+Space Karabiner rule)
 defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 60 \
-  '<dict><key>enabled</key><false/><key>value</key><dict><key>parameters</key><array><integer>32</integer><integer>49</integer><integer>262144</integer></array><key>type</key><string>standard</string></dict></dict>'
+    '<dict><key>enabled</key><true/><key>value</key><dict><key>parameters</key><array><integer>32</integer><integer>49</integer><integer>262144</integer></array><key>type</key><string>standard</string></dict></dict>'
 
 # Apply changes
 /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
@@ -141,14 +144,16 @@ After these swaps, all **complex rules** below operate on the remapped codes (e.
 | 6 | Media keys → F1–F12 | External keyboard media keys become function keys | External keyboards send consumer_key_code instead of f-key |
 | 7 | F11 → Cmd+Ctrl+F | Fullscreen toggle | macOS fullscreen shortcut differs from Windows |
 | 8 | Win+D → hide all apps | Show Desktop | Uses osascript to hide all foreground apps, like Windows minimize-all |
-| 9 | Alt+Space → Cmd+Space | Open Spotlight | Physical Alt → Control; this converts Control+Space to Cmd+Space (Spotlight) |
-| 10 | Ctrl+Backspace → Option+Backspace | Delete previous word | macOS word-delete uses Option |
-| 11 | Cmd+Shift+Esc → Activity Monitor | Task Manager equivalent | — |
-| 12 | Terminal: Home/End → Ctrl+A/E | Beginning/end of line in terminals | Cmd+Arrow doesn't map to line nav in shells |
-| 13 | Home/End → Cmd+Arrows | Line/Document navigation | macOS defaults to scrolling for Home/End |
-| 14 | Win+L → Cmd+Ctrl+Q | Lock screen | macOS lock shortcut differs from Windows |
-| 15 | Ctrl+Tab → Cmd+Shift+] | Next/Previous tab | macOS Cmd+Tab is app switcher; AltTab replaces it |
-| 16 | Alt+F3 → Option+F3 (VS Code / Antigravity) | Select All Occurrences | Physical Alt → Control; this app-scoped rule sends Option+F3 instead |
+| 9 | Cmd+Space → blocked | Prevent physical Ctrl+Space from opening Spotlight | Physical Ctrl maps to Command; this swallows Cmd+Space at source |
+| 10 | Alt+Space → Cmd+Space | Open Spotlight | Physical Alt → Control; this converts Control+Space to Cmd+Space (Spotlight) |
+| 11 | Win+Space → Ctrl+Space | Switch input source (language) | Physical Win → Option; this converts Option+Space to Ctrl+Space (input switching) |
+| 12 | Ctrl+Backspace → Option+Backspace | Delete previous word | macOS word-delete uses Option |
+| 13 | Cmd+Shift+Esc → Activity Monitor | Task Manager equivalent | — |
+| 14 | Terminal: Home/End → Ctrl+A/E | Beginning/end of line in terminals | Cmd+Arrow doesn't map to line nav in shells |
+| 15 | Home/End → Cmd+Arrows | Line/Document navigation | macOS defaults to scrolling for Home/End |
+| 16 | Win+L → Cmd+Ctrl+Q | Lock screen | macOS lock shortcut differs from Windows |
+| 17 | Ctrl+Tab → Cmd+Shift+] | Next/Previous tab | macOS Cmd+Tab is app switcher; AltTab replaces it |
+| 18 | Alt+F3 → Option+F3 (VS Code / Antigravity) | Select All Occurrences | Physical Alt → Control; this app-scoped rule sends Option+F3 instead |
 
 **Key design decisions:**
 - Rule 1 uses `"optional": []` — only fires when Option is the **sole** modifier.
@@ -157,10 +162,12 @@ After these swaps, all **complex rules** below operate on the remapped codes (e.
 - Rule 4: Ctrl+Shift+C/V entries come **before** Ctrl+C (Karabiner is first-match), so copy/paste still works in terminals via Ctrl+Shift+C/V.
 - Rule 6 must be placed **before** rule 7 in the config, so that the media-key volume_decrement → F11 fires first, then F11 → fullscreen fires.
 - Rule 8 (Win+D) uses a `shell_command` to hide all foreground apps via osascript, mimicking Windows' minimize-all behavior. Apps can be restored from the Dock or via Alt+Tab.
-- Rule 15 converts Cmd+Tab → Cmd+Shift+] (next tab). This replaces the macOS native app switcher, which AltTab already replaces.
+- Rule 9 blocks Cmd+Space, so physical Ctrl+Space no longer opens Spotlight after the modifier swaps.
+- Rule 11 maps Win+Space to Ctrl+Space for input source switching (language). This must be placed **after** the Cmd+Space block (rule 9) and Alt+Space Spotlight rule (rule 10) — Karabiner is first-match, and Win+Space uses `option` (not `command` or `control`), so there is no conflict.
+- Rule 17 converts Cmd+Tab → Cmd+Shift+] (next tab). This replaces the macOS native app switcher, which AltTab already replaces.
 - There is **NO** Karabiner rule for Alt+Tab — AltTab is configured to listen on Control+Tab directly (see Section 5).
 - **F11 on built-in MacBook keyboard**: Use Fn+F11 (physical F-key row) or press Ctrl+Cmd+F directly (maps to Cmd+Control+F = macOS fullscreen after simple mods).
-- Rule 16 is scoped to VS Code and Antigravity only — in other apps, Alt+F3 still sends Control+F3.
+- Rule 18 is scoped to VS Code and Antigravity only — in other apps, Alt+F3 still sends Control+F3.
 
 ### 3.3 Full config file
 
@@ -249,9 +256,21 @@ Copy this file verbatim:
                         ]
                     },
                     {
+                        "description": "Block physical Ctrl+Space (Command+Space after remap)",
+                        "manipulators": [
+                            { "type": "basic", "from": { "key_code": "spacebar", "modifiers": { "mandatory": ["command"], "optional": [] } }, "to": [{ "key_code": "vk_none" }] }
+                        ]
+                    },
+                    {
                         "description": "Alt+Space opens Spotlight (maps to Cmd+Space)",
                         "manipulators": [
                             { "type": "basic", "from": { "key_code": "spacebar", "modifiers": { "mandatory": ["control"], "optional": [] } }, "to": [{ "key_code": "spacebar", "modifiers": ["left_command"] }] }
+                        ]
+                    },
+                    {
+                        "description": "Win+Space switches input source (via Ctrl+Space)",
+                        "manipulators": [
+                            { "type": "basic", "from": { "key_code": "spacebar", "modifiers": { "mandatory": ["option"], "optional": [] } }, "to": [{ "key_code": "spacebar", "modifiers": ["left_control"] }] }
                         ]
                     },
                     {
@@ -430,7 +449,21 @@ By default, macOS Page Up/Down only scrolls the view without moving the cursor. 
 
 ---
 
-## 7. Scroll Direction
+## 8. Red X Button — Quit on Close
+
+By default, macOS's red close button only closes the window — the app keeps running in the Dock. On Windows, clicking X quits the application. **RedQuits** restores this behavior: when you close the last window of an app, it quits the app entirely.
+
+```bash
+brew install --cask redquits
+```
+
+Add RedQuits to **System Settings → General → Login Items** so it runs on startup. No further configuration is needed.
+
+> **Note**: Some macOS apps (e.g. Finder, menu bar apps) intentionally have no windows and are unaffected.
+
+---
+
+## 8. Scroll Direction
 
 macOS "natural scrolling" is inverted compared to Windows for mouse wheels:
 
@@ -442,7 +475,7 @@ Reverses scroll direction for mouse only, keeping trackpad natural scrolling int
 
 ---
 
-## 8. VS Code
+## 9. VS Code
 
 Enable Ctrl+scroll zoom (Cmd+scroll after remapping). Add to VS Code `settings.json` (`Cmd+Shift+P` → "Open User Settings JSON"):
 
@@ -454,7 +487,7 @@ Enable Ctrl+scroll zoom (Cmd+scroll after remapping). Add to VS Code `settings.j
 
 ---
 
-## 9. Keyboard Cheat Sheet
+## 10. Keyboard Cheat Sheet
 
 ### General Shortcuts
 
@@ -471,6 +504,7 @@ Enable Ctrl+scroll zoom (Cmd+scroll after remapping). Add to VS Code `settings.j
 | Ctrl+Tab / Ctrl+Shift+Tab | Next / Previous tab |
 | Win+D | Show Desktop (hide all apps) |
 | Alt+Space | Spotlight search |
+| Win+Space | Switch input source (language) |
 | F11 | Toggle fullscreen |
 | Win+1/2/3 | Open Chrome / Ghostty / IPython |
 | Win+L | Lock screen |
@@ -503,13 +537,13 @@ These issues cannot be resolved generically via Karabiner because of architectur
 | Issue | Root Cause | Workaround |
 |---|---|---|
 | Ctrl+C/R/Z in VS Code / Antigravity terminal | Karabiner can't distinguish terminal panel vs editor within the same app. Physical Ctrl → Cmd, which triggers IDE commands, not terminal control chars. | Configure IDE keybindings: bind Cmd+C → send `\u0003` (SIGINT) when terminal is focused. In VS Code, Alt (physical) sends Control, so **Alt+C/R/Z works** as a fallback. |
-| Alt+F3 in other apps (not VS Code / Antigravity) | Physical Alt → Control (for AltTab), but apps expect Option for "Alt" shortcuts. A Karabiner rule now fixes this for VS Code and Antigravity (rule 15). | For other apps: remap in the app's settings, or use the app's native equivalent. |
+| Alt+F3 in other apps (not VS Code / Antigravity) | Physical Alt → Control (for AltTab), but apps expect Option for "Alt" shortcuts. A Karabiner rule now fixes this for VS Code and Antigravity (rule 18). | For other apps: remap in the app's settings, or use the app's native equivalent. |
 | Ctrl+scroll zoom in browsers | Karabiner cannot intercept scroll wheel events, only key presses. | Use **Ctrl+= / Ctrl+-** for page zoom (maps to Cmd++/Cmd+-, works in all browsers). |
 | F11 on built-in MacBook keyboard | No dedicated F11 key on Touch Bar models. | Press **Fn+F11** (Touch Bar/physical F-row), or **Ctrl+Cmd+F** on built-in keyboard (maps to Cmd+Control+F = fullscreen). |
 
 ---
 
-## 10. Quick Setup Script
+## 11. Quick Setup Script
 
 Run on a fresh macOS machine after installing Homebrew:
 
@@ -518,7 +552,7 @@ Run on a fresh macOS machine after installing Homebrew:
 set -e
 
 # --- Install apps ---
-brew install --cask karabiner-elements rectangle alt-tab unnaturalscrollwheels
+brew install --cask karabiner-elements rectangle alt-tab unnaturalscrollwheels redquits
 
 # --- macOS settings ---
 defaults write com.apple.dock autohide -bool true && killall Dock
@@ -557,7 +591,7 @@ echo ""
 echo "Done! Manual steps remaining:"
 echo "  1. Grant Accessibility: Karabiner, Rectangle, AltTab"
 echo "  2. Grant Input Monitoring: Karabiner"
-echo "  3. Add to Login Items: Karabiner, Rectangle, AltTab, UnnaturalScrollWheels"
+echo "  3. Add to Login Items: Karabiner, Rectangle, AltTab, UnnaturalScrollWheels, RedQuits"
 echo "  4. Import Rectangle config: Rectangle → Settings → Import → ~/Documents/RectangleConfig.json"
 echo "  5. Restart to apply keyboard shortcut changes (Spotlight)"
 echo "  6. Restart AltTab: killall AltTab; open -a AltTab"

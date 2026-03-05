@@ -269,9 +269,22 @@
                         ]
                     },
                     {
+                        "description": "Block physical Ctrl+Space (Command+Space after remap)",
+                        "manipulators": [
+                            { "type": "basic", "from": { "key_code": "spacebar", "modifiers": { "mandatory": ["command"], "optional": [] } }, "to": [{ "key_code": "vk_none" }] }
+                        ]
+                    },
+                    {
                         "description": "Alt+Space opens Spotlight (maps to Cmd+Space)",
                         "manipulators": [
                             { "type": "basic", "from": { "key_code": "spacebar", "modifiers": { "mandatory": ["control"], "optional": [] } }, "to": [{ "key_code": "spacebar", "modifiers": ["left_command"] }] }
+                        ]
+                    },
+                    {
+                        "description": "Alt+Shift switches input source (via Ctrl+Space)",
+                        "manipulators": [
+                            { "type": "basic", "from": { "key_code": "left_shift", "modifiers": { "mandatory": ["control"], "optional": [] } }, "to": [{ "key_code": "left_shift", "modifiers": ["left_control"] }], "to_if_alone": [{ "key_code": "spacebar", "modifiers": ["left_control"] }] },
+                            { "type": "basic", "from": { "key_code": "left_control", "modifiers": { "mandatory": ["shift"], "optional": [] } }, "to": [{ "key_code": "left_control", "modifiers": ["left_shift"] }], "to_if_alone": [{ "key_code": "spacebar", "modifiers": ["left_control"] }] }
                         ]
                     },
                     {

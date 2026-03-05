@@ -43,10 +43,10 @@ backup_and_copy "$SCRIPT_DIR/config/ghostty/icon_256x256@2x.png" \
 
 # macOS defaults
 echo "[4/4] macOS keyboard shortcut defaults"
-# Disable Input Source switching on Ctrl+Space
+# Enable Input Source switching on Ctrl+Space (used by Alt+Shift Karabiner rule)
 defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 60 \
-  '<dict><key>enabled</key><false/><key>value</key><dict><key>parameters</key><array><integer>32</integer><integer>49</integer><integer>262144</integer></array><key>type</key><string>standard</string></dict></dict>'
-echo "  Disabled Ctrl+Space input source switching"
+    '<dict><key>enabled</key><true/><key>value</key><dict><key>parameters</key><array><integer>32</integer><integer>49</integer><integer>262144</integer></array><key>type</key><string>standard</string></dict></dict>'
+echo "  Enabled Ctrl+Space input source switching"
 
 # Apply changes
 /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
@@ -54,10 +54,10 @@ echo "  Applied defaults changes"
 
 echo ""
 echo "Done! Manual steps remaining:"
-echo "  1. Install apps: brew install --cask karabiner-elements rectangle alt-tab ghostty unnaturalscrollwheels"
+echo "  1. Install apps: brew install --cask karabiner-elements rectangle alt-tab ghostty unnaturalscrollwheels redquits"
 echo "  2. Grant Accessibility: Karabiner, Rectangle, AltTab"
 echo "  3. Grant Input Monitoring: Karabiner"
-echo "  4. Add to Login Items: Karabiner, Rectangle, AltTab, UnnaturalScrollWheels"
+echo "  4. Add to Login Items: Karabiner, Rectangle, AltTab, UnnaturalScrollWheels, RedQuits"
 echo "  5. Import Rectangle config: Rectangle → Settings → Import → config/rectangle/RectangleConfig.json"
 echo "  6. Restart to apply keyboard shortcut changes"
 echo "  7. Restart AltTab: killall AltTab; open -a AltTab"
