@@ -40,6 +40,7 @@ This will:
    - `config/karabiner/karabiner.json` → `~/.config/karabiner/karabiner.json`
    - `config/keybindings/DefaultKeyBinding.dict` → `~/Library/KeyBindings/DefaultKeyBinding.dict`
    - `config/ghostty/config` → `~/.config/ghostty/config`
+5. **Add apps to Login Items** so they auto-start on login
 
 After running, you'll still need to:
 
@@ -47,12 +48,12 @@ After running, you'll still need to:
    - Karabiner (`karabiner_grabber`), Rectangle, AltTab
 2. Grant **Input Monitoring** (System Settings → Privacy & Security → Input Monitoring):
    - Karabiner (`karabiner_grabber`, `karabiner_observer`)
-3. Add to **Login Items** (System Settings → General → Login Items):
-   - Karabiner-Elements, Rectangle, AltTab, UnnaturalScrollWheels, RedQuits, Ghostty
-4. **Import Rectangle config**: Rectangle → Settings → Import → select `config/rectangle/RectangleConfig.json`
-5. **VS Code**: add `"editor.mouseWheelZoom": true` to settings.json
-6. Add to `~/.zshrc`: `export LC_TIME=en_US.UTF-8`
-7. **Restart macOS** to apply all keyboard shortcut changes
+3. **Import Rectangle config**: Rectangle → Settings → Import → select `config/rectangle/RectangleConfig.json`
+4. **VS Code**: add `"editor.mouseWheelZoom": true` to settings.json
+5. Add to `~/.zshrc`: `export LC_TIME=en_US.UTF-8`
+6. **Restart macOS** to apply all keyboard shortcut changes
+
+If macOS blocks background items, allow them in System Settings → General → Login Items.
 
 ---
 
@@ -266,7 +267,7 @@ cp config/keybindings/DefaultKeyBinding.dict ~/Library/KeyBindings/DefaultKeyBin
 
 By default, macOS's red close button only closes the window — the app keeps running in the Dock. On Windows, clicking X quits the application. **RedQuits** restores this behavior: when you close the last window of an app, it quits the app entirely.
 
-Installed automatically by `./install.sh`. Add RedQuits to **System Settings → General → Login Items** so it runs on startup. No further configuration is needed.
+Installed automatically by `./install.sh`, which also adds RedQuits to Login Items. If macOS blocks background items, allow it in System Settings → General → Login Items. No further configuration is needed.
 
 > **Note**: Some macOS apps (e.g. Finder, menu bar apps) intentionally have no windows and are unaffected.
 
@@ -276,7 +277,7 @@ Installed automatically by `./install.sh`. Add RedQuits to **System Settings →
 
 macOS "natural scrolling" is inverted compared to Windows for mouse wheels. **UnnaturalScrollWheels** reverses scroll direction for mouse only, keeping trackpad natural scrolling intact.
 
-Installed automatically by `./install.sh`. Add to Login Items.
+Installed automatically by `./install.sh`, which also adds it to Login Items. If macOS blocks background items, allow it in System Settings → General → Login Items.
 
 ---
 
