@@ -57,13 +57,17 @@ echo "  Keyboard shortcut: Ctrl+Space input source switching enabled"
 
 # ---- Step 3: AltTab settings ----
 echo "[3/7] Configuring AltTab"
-# Note: holdShortcut can no longer be set via defaults write (AltTab 10.x uses
-# ShortcutRecorder secure coding format). Must be configured via AltTab UI.
+killall "AltTab" 2>/dev/null && sleep 1
+# holdShortcut must be written as a ShortcutRecorder binary (AltTab 10.x).
+# We use PlistBuddy to merge the exported plist containing the secureData blob.
+ALTTAB_PLIST="$HOME/Library/Preferences/com.lwouis.alt-tab-macos.plist"
+/usr/libexec/PlistBuddy -c "Delete :holdShortcut" "$ALTTAB_PLIST" 2>/dev/null || true
+/usr/libexec/PlistBuddy -c "Add :holdShortcut dict" "$ALTTAB_PLIST"
+/usr/libexec/PlistBuddy -c "Merge '$SCRIPT_DIR/config/alttab/holdShortcut.plist' :holdShortcut" "$ALTTAB_PLIST"
 defaults write com.lwouis.alt-tab-macos showMinimizedWindows -int 0
 defaults write com.lwouis.alt-tab-macos showHiddenWindows -int 0
 defaults write com.lwouis.alt-tab-macos menubarIconShown -bool false
-echo "  AltTab: hide minimized/hidden, no menu bar icon"
-echo "  ⚠ Hold shortcut must be set manually (see post-install steps)"
+echo "  AltTab: hold=Control, hide minimized/hidden, no menu bar icon"
 
 # ---- Step 4: Karabiner config ----
 echo "[4/7] Installing Karabiner config"
@@ -86,7 +90,8 @@ fi
 
 # ---- Step 7: Restart affected apps ----
 echo "[7/7] Restarting apps to apply settings"
-killall "AltTab" 2>/dev/null && sleep 1 && open -a "AltTab" && echo "  AltTab restarted" || echo "  AltTab not running (start it manually)"
+killall "AltTab" 2>/dev/null; sleep 1
+open -a "AltTab" && echo "  AltTab restarted" || echo "  AltTab not running (start it manually)"
 
 echo ""
 echo "=== Install complete ==="
@@ -100,12 +105,9 @@ echo "  2. Grant Input Monitoring (System Settings → Privacy & Security → In
 echo "     - Karabiner (karabiner_grabber, karabiner_observer)"
 echo "  3. Add to Login Items (System Settings → General → Login Items):"
 echo "     - Karabiner-Elements, Rectangle, AltTab, UnnaturalScrollWheels, RedQuits, Ghostty"
-echo "  4. Configure AltTab hold shortcut:"
-echo "     - Open AltTab → Preferences → Controls tab"
-echo "     - Set Shortcut 1 Hold to ⌃ Control (instead of ⌥ Option)"
-echo "  5. Import Rectangle config:"
+echo "  4. Import Rectangle config:"
 echo "     - Open Rectangle → Settings → Import"
 echo "     - Select: $SCRIPT_DIR/config/rectangle/RectangleConfig.json"
-echo "  6. VS Code: add \"editor.mouseWheelZoom\": true to settings.json"
-echo "  7. Add to ~/.zshrc: export LC_TIME=en_US.UTF-8"
-echo "  8. Restart macOS to apply all keyboard shortcut changes"
+echo "  5. VS Code: add \"editor.mouseWheelZoom\": true to settings.json"
+echo "  6. Add to ~/.zshrc: export LC_TIME=en_US.UTF-8"
+echo "  7. Restart macOS to apply all keyboard shortcut changes"
