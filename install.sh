@@ -57,11 +57,13 @@ echo "  Keyboard shortcut: Ctrl+Space input source switching enabled"
 
 # ---- Step 3: AltTab settings ----
 echo "[3/7] Configuring AltTab"
-defaults write com.lwouis.alt-tab-macos holdShortcut -string "⌃"
+# Note: holdShortcut can no longer be set via defaults write (AltTab 10.x uses
+# ShortcutRecorder secure coding format). Must be configured via AltTab UI.
 defaults write com.lwouis.alt-tab-macos showMinimizedWindows -int 0
 defaults write com.lwouis.alt-tab-macos showHiddenWindows -int 0
 defaults write com.lwouis.alt-tab-macos menubarIconShown -bool false
-echo "  AltTab: hold=Control, hide minimized/hidden, no menu bar icon"
+echo "  AltTab: hide minimized/hidden, no menu bar icon"
+echo "  ⚠ Hold shortcut must be set manually (see post-install steps)"
 
 # ---- Step 4: Karabiner config ----
 echo "[4/7] Installing Karabiner config"
@@ -98,9 +100,12 @@ echo "  2. Grant Input Monitoring (System Settings → Privacy & Security → In
 echo "     - Karabiner (karabiner_grabber, karabiner_observer)"
 echo "  3. Add to Login Items (System Settings → General → Login Items):"
 echo "     - Karabiner-Elements, Rectangle, AltTab, UnnaturalScrollWheels, RedQuits, Ghostty"
-echo "  4. Import Rectangle config:"
+echo "  4. Configure AltTab hold shortcut:"
+echo "     - Open AltTab → Preferences → Controls tab"
+echo "     - Set Shortcut 1 Hold to ⌃ Control (instead of ⌥ Option)"
+echo "  5. Import Rectangle config:"
 echo "     - Open Rectangle → Settings → Import"
 echo "     - Select: $SCRIPT_DIR/config/rectangle/RectangleConfig.json"
-echo "  5. VS Code: add \"editor.mouseWheelZoom\": true to settings.json"
-echo "  6. Add to ~/.zshrc: export LC_TIME=en_US.UTF-8"
-echo "  7. Restart macOS to apply all keyboard shortcut changes"
+echo "  6. VS Code: add \"editor.mouseWheelZoom\": true to settings.json"
+echo "  7. Add to ~/.zshrc: export LC_TIME=en_US.UTF-8"
+echo "  8. Restart macOS to apply all keyboard shortcut changes"

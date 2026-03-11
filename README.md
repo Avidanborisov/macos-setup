@@ -35,7 +35,7 @@ This will:
 
 1. **Install apps** via Homebrew: Karabiner-Elements, Rectangle, AltTab, Ghostty, UnnaturalScrollWheels, RedQuits
 2. **Apply macOS defaults**: auto-hide Dock, F-keys as standard, English locale, Ctrl+Space input switching
-3. **Configure AltTab**: Control as hold key, hide minimized/hidden windows
+3. **Configure AltTab**: hide minimized/hidden windows (hold shortcut must be set manually — see below)
 4. **Copy config files** to their system locations (backs up existing files first):
    - `config/karabiner/karabiner.json` → `~/.config/karabiner/karabiner.json`
    - `config/keybindings/DefaultKeyBinding.dict` → `~/Library/KeyBindings/DefaultKeyBinding.dict`
@@ -49,10 +49,11 @@ After running, you'll still need to:
    - Karabiner (`karabiner_grabber`, `karabiner_observer`)
 3. Add to **Login Items** (System Settings → General → Login Items):
    - Karabiner-Elements, Rectangle, AltTab, UnnaturalScrollWheels, RedQuits, Ghostty
-4. **Import Rectangle config**: Rectangle → Settings → Import → select `config/rectangle/RectangleConfig.json`
-5. **VS Code**: add `"editor.mouseWheelZoom": true` to settings.json
-6. Add to `~/.zshrc`: `export LC_TIME=en_US.UTF-8`
-7. **Restart macOS** to apply all keyboard shortcut changes
+4. **Configure AltTab hold shortcut**: AltTab → Preferences → Controls → set Shortcut 1 Hold to `⌃ Control`
+5. **Import Rectangle config**: Rectangle → Settings → Import → select `config/rectangle/RectangleConfig.json`
+6. **VS Code**: add `"editor.mouseWheelZoom": true` to settings.json
+7. Add to `~/.zshrc`: `export LC_TIME=en_US.UTF-8`
+8. **Restart macOS** to apply all keyboard shortcut changes
 
 ---
 
@@ -231,9 +232,9 @@ This means:
 
 ### Settings
 
-These settings are applied automatically by `./install.sh`. The key settings are:
+The settings below are applied automatically by `./install.sh`, **except the hold shortcut** which must be set manually via the AltTab preferences UI (AltTab 10.x uses ShortcutRecorder's secure coding format which cannot be set via `defaults write`).
 
-- **Hold modifier**: Control (`⌃`) — because physical Alt maps to Control after Karabiner simple mods
+- **Hold modifier**: Control (`⌃`) — because physical Alt maps to Control after Karabiner simple mods. **Set manually**: AltTab → Preferences → Controls → Shortcut 1 Hold → `⌃ Control`
 - **Show minimized/hidden windows**: disabled — only show active windows
 - **Menu bar icon**: hidden
 
