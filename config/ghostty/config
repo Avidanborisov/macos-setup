@@ -1,3 +1,5 @@
 command = /opt/homebrew/bin/tmux new -A -s main
+font-size = 16
+confirm-close-surface = false
 macos-icon = custom
 macos-custom-icon = ~/.config/ghostty/icon_256x256@2x.png

@@ -16,12 +16,13 @@ Based on [this blog post](https://imoskvin.com/blog/macos-like-windows/).
 4. [Karabiner-Elements — Key Remapping](#4-karabiner-elements--key-remapping)
 5. [Rectangle — Window Snapping](#5-rectangle--window-snapping)
 6. [AltTab — Window Switching](#6-alttab--window-switching)
-7. [Page Up / Page Down — Cursor Movement](#7-page-up--page-down--cursor-movement)
-8. [Red X Button — Quit on Close](#8-red-x-button--quit-on-close)
-9. [Scroll Direction](#9-scroll-direction)
-10. [VS Code](#10-vs-code)
-11. [Keyboard Cheat Sheet](#11-keyboard-cheat-sheet)
-12. [Known Limitations](#12-known-limitations)
+7. [Clipboard History — Maccy (Win+V)](#7-clipboard-history--maccy-win-v)
+8. [Page Up / Page Down — Cursor Movement](#8-page-up--page-down--cursor-movement)
+9. [Red X Button — Quit on Close](#9-red-x-button--quit-on-close)
+10. [Scroll Direction](#10-scroll-direction)
+11. [VS Code](#11-vs-code)
+12. [Keyboard Cheat Sheet](#12-keyboard-cheat-sheet)
+13. [Known Limitations](#13-known-limitations)
 
 ---
 
@@ -33,7 +34,7 @@ Based on [this blog post](https://imoskvin.com/blog/macos-like-windows/).
 
 This will:
 
-1. **Install apps** via Homebrew: Karabiner-Elements, Rectangle, AltTab, Ghostty, UnnaturalScrollWheels, RedQuits
+1. **Install apps** via Homebrew: Karabiner-Elements, Rectangle, AltTab, Maccy, Ghostty, UnnaturalScrollWheels, RedQuits
 2. **Apply macOS defaults**: auto-hide Dock, F-keys as standard, English locale, Ctrl+Space input switching
 3. **Configure AltTab**: Control as hold key, hide minimized/hidden windows
 4. **Copy config files** to their system locations (backs up existing files first):
@@ -46,6 +47,7 @@ After running, you'll still need to:
 
 1. Grant **Accessibility** permissions (System Settings → Privacy & Security → Accessibility):
    - Karabiner (`karabiner_grabber`), Rectangle, AltTab
+   - Maccy (only if you enable "Paste automatically")
 2. Grant **Input Monitoring** (System Settings → Privacy & Security → Input Monitoring):
    - Karabiner (`karabiner_grabber`, `karabiner_observer`)
 3. **Import Rectangle config**: Rectangle → Settings → Import → select `config/rectangle/RectangleConfig.json`
@@ -61,7 +63,7 @@ If macOS blocks background items, allow them in System Settings → General → 
 
 | File | Purpose | System Location |
 |------|---------|-----------------|
-| `config/karabiner/karabiner.json` | Key remapping (18 rules + per-device mods) | `~/.config/karabiner/karabiner.json` |
+| `config/karabiner/karabiner.json` | Key remapping (19 rules + per-device mods) | `~/.config/karabiner/karabiner.json` |
 | `config/alttab/holdShortcut.plist` | AltTab hold shortcut (Control, in ShortcutRecorder binary format) | Written to AltTab prefs via PlistBuddy |
 | `config/rectangle/RectangleConfig.json` | Window snapping (Win+Arrows) | Import via Rectangle UI |
 | `config/keybindings/DefaultKeyBinding.dict` | Page Up/Down cursor movement | `~/Library/KeyBindings/DefaultKeyBinding.dict` |
@@ -174,6 +176,7 @@ After these swaps, all **complex rules** below operate on the remapped codes (e.
 | 16 | Win+L → Cmd+Ctrl+Q | Lock screen | macOS lock shortcut differs from Windows |
 | 17 | Ctrl+Tab → Cmd+Shift+] | Next/Previous tab | macOS Cmd+Tab is app switcher; AltTab replaces it |
 | 18 | Alt+F3 → Option+F3 (VS Code / Antigravity) | Select All Occurrences | Physical Alt → Control; this app-scoped rule sends Option+F3 instead |
+| 19 | Win+V → Cmd+Shift+C | Clipboard history (Maccy) | Keeps Maccy's default hotkey while using Win+V |
 
 **Key design decisions:**
 - Rule 1 uses `"optional": []` — only fires when Option is the **sole** modifier.
@@ -243,7 +246,26 @@ These settings are applied automatically by `./install.sh`. The key settings are
 
 ---
 
-## 7. Page Up / Page Down — Cursor Movement
+## 7. Clipboard History — Maccy (Win+V)
+
+Maccy is a lightweight, open-source clipboard manager. It uses `Cmd+Shift+C` as its default hotkey.
+
+Install:
+
+```bash
+brew install --cask maccy
+```
+
+Then:
+
+1. Open Maccy once and enable **Launch at Login** in Maccy settings.
+2. Optional: If you enable **Paste automatically**, grant Accessibility permission to Maccy (System Settings → Privacy & Security → Accessibility).
+
+Win+V integration is handled by Karabiner rule 19, which maps `Win+V` (Option+V) to `Cmd+Shift+C`, so Maccy opens without changing its own shortcut.
+
+---
+
+## 8. Page Up / Page Down — Cursor Movement
 
 By default, macOS Page Up/Down only scrolls the view without moving the cursor. On Windows, the cursor moves too. This is fixed via a **DefaultKeyBinding.dict** file (works for all Cocoa apps — TextEdit, Safari, Notes, etc.; VS Code already handles this correctly on its own).
 
@@ -263,7 +285,7 @@ cp config/keybindings/DefaultKeyBinding.dict ~/Library/KeyBindings/DefaultKeyBin
 
 ---
 
-## 8. Red X Button — Quit on Close
+## 9. Red X Button — Quit on Close
 
 By default, macOS's red close button only closes the window — the app keeps running in the Dock. On Windows, clicking X quits the application. **RedQuits** restores this behavior: when you close the last window of an app, it quits the app entirely.
 
@@ -273,7 +295,7 @@ Installed automatically by `./install.sh`, which also adds RedQuits to Login Ite
 
 ---
 
-## 9. Scroll Direction
+## 10. Scroll Direction
 
 macOS "natural scrolling" is inverted compared to Windows for mouse wheels. **UnnaturalScrollWheels** reverses scroll direction for mouse only, keeping trackpad natural scrolling intact.
 
@@ -281,7 +303,7 @@ Installed automatically by `./install.sh`, which also adds it to Login Items. If
 
 ---
 
-## 10. VS Code
+## 11. VS Code
 
 Enable Ctrl+scroll zoom (Cmd+scroll after remapping). Add to VS Code `settings.json` (`Cmd+Shift+P` → "Open User Settings JSON"):
 
@@ -293,7 +315,7 @@ Enable Ctrl+scroll zoom (Cmd+scroll after remapping). Add to VS Code `settings.j
 
 ---
 
-## 11. Keyboard Cheat Sheet
+## 12. Keyboard Cheat Sheet
 
 ### General Shortcuts
 
@@ -311,6 +333,7 @@ Enable Ctrl+scroll zoom (Cmd+scroll after remapping). Add to VS Code `settings.j
 | Win+D | Show Desktop (hide all apps) |
 | Alt+Space | Spotlight search |
 | Win+Space | Switch input source (language) |
+| Win+V | Clipboard history (Maccy) |
 | F11 | Toggle fullscreen |
 | Win+1/2/3 | Open Chrome / Ghostty / IPython |
 | Win+L | Lock screen |
@@ -336,7 +359,7 @@ Enable Ctrl+scroll zoom (Cmd+scroll after remapping). Add to VS Code `settings.j
 
 ---
 
-## 12. Known Limitations
+## 13. Known Limitations
 
 These issues cannot be resolved generically via Karabiner because of architectural constraints:
 

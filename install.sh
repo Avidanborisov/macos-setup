@@ -70,7 +70,7 @@ if ! command -v brew &>/dev/null; then
     echo '  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
     exit 1
 fi
-brew install --cask karabiner-elements rectangle alt-tab ghostty unnaturalscrollwheels redquits 2>/dev/null || true
+brew install --cask karabiner-elements rectangle alt-tab maccy ghostty unnaturalscrollwheels redquits 2>/dev/null || true
 echo "  Apps installed (already-installed apps were skipped)"
 
 # ---- Step 2: macOS system defaults ----
@@ -108,18 +108,26 @@ defaults write com.lwouis.alt-tab-macos showHiddenWindows -int 0
 defaults write com.lwouis.alt-tab-macos menubarIconShown -bool false
 echo "  AltTab: hold=Control, hide minimized/hidden, no menu bar icon"
 
-# ---- Step 4: Karabiner config ----
-echo "[4/8] Installing Karabiner config"
+# ---- Step 4: Maccy settings ----
+echo "[4/9] Configuring Maccy"
+killall "Maccy" 2>/dev/null && sleep 1
+defaults write org.p0deje.Maccy KeyboardShortcuts_popup -string '{"carbonKeyCode":9,"carbonModifiers":2048}'
+defaults write org.p0deje.Maccy pasteByDefault -bool true
+defaults write org.p0deje.Maccy menubarIconShown -bool false
+echo "  Maccy: hotkey set to Option+V (Win+V), auto-paste enabled, no menu bar icon"
+
+# ---- Step 5: Karabiner config ----
+echo "[5/9] Installing Karabiner config"
 backup_and_copy "$SCRIPT_DIR/config/karabiner/karabiner.json" \
     "$HOME/.config/karabiner/karabiner.json"
 
-# ---- Step 5: DefaultKeyBinding.dict ----
-echo "[5/8] Installing DefaultKeyBinding.dict"
+# ---- Step 6: DefaultKeyBinding.dict ----
+echo "[6/9] Installing DefaultKeyBinding.dict"
 backup_and_copy "$SCRIPT_DIR/config/keybindings/DefaultKeyBinding.dict" \
     "$HOME/Library/KeyBindings/DefaultKeyBinding.dict"
 
-# ---- Step 6: Ghostty config ----
-echo "[6/8] Installing Ghostty config"
+# ---- Step 7: Ghostty config ----
+echo "[7/9] Installing Ghostty config"
 backup_and_copy "$SCRIPT_DIR/config/ghostty/config" \
     "$HOME/.config/ghostty/config"
 if [[ -f "$SCRIPT_DIR/config/ghostty/icon_256x256@2x.png" ]]; then
@@ -127,19 +135,21 @@ if [[ -f "$SCRIPT_DIR/config/ghostty/icon_256x256@2x.png" ]]; then
         "$HOME/.config/ghostty/icon_256x256@2x.png"
 fi
 
-# ---- Step 7: Login Items ----
-echo "[7/8] Adding apps to Login Items"
+# ---- Step 8: Login Items ----
+echo "[8/9] Adding apps to Login Items"
 add_login_item "Karabiner-Elements"
 add_login_item "Rectangle"
 add_login_item "AltTab"
+add_login_item "Maccy"
 add_login_item "UnnaturalScrollWheels"
 add_login_item "RedQuits"
 add_login_item "Ghostty"
 
-# ---- Step 8: Restart affected apps ----
-echo "[8/8] Restarting apps to apply settings"
+# ---- Step 9: Restart affected apps ----
+echo "[9/9] Restarting apps to apply settings"
 killall "AltTab" 2>/dev/null; sleep 1
 open -a "AltTab" && echo "  AltTab restarted" || echo "  AltTab not running (start it manually)"
+open -a "Maccy" && echo "  Maccy started" || echo "  Maccy not running (start it manually)"
 
 echo ""
 echo "=== Install complete ==="
@@ -149,6 +159,7 @@ echo "  1. Grant Accessibility permissions (System Settings → Privacy & Securi
 echo "     - Karabiner (karabiner_grabber)"
 echo "     - Rectangle"
 echo "     - AltTab"
+echo "     - Maccy (only if you enable \"Paste automatically\")"
 echo "  2. Grant Input Monitoring (System Settings → Privacy & Security → Input Monitoring):"
 echo "     - Karabiner (karabiner_grabber, karabiner_observer)"
 echo "  3. Import Rectangle config:"
