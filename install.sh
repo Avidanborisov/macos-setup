@@ -91,8 +91,27 @@ echo "  Locale: forced to English"
 # Enable Input Source switching on Ctrl+Space (used by Win+Space Karabiner rule)
 defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 60 \
     '<dict><key>enabled</key><true/><key>value</key><dict><key>parameters</key><array><integer>32</integer><integer>49</integer><integer>262144</integer></array><key>type</key><string>standard</string></dict></dict>'
-/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
 echo "  Keyboard shortcut: Ctrl+Space input source switching enabled"
+
+# Disable Control+Arrow system shortcuts so they don't intercept AltTab arrow navigation.
+# After key remapping, the AltTab hold key (Control) + Arrow triggers these macOS shortcuts
+# instead of letting AltTab handle arrow-key window navigation.
+# 32 = Mission Control (Ctrl+Up), 33 = App Expose (Ctrl+Down),
+# 79/80 = Move left/right a space (Ctrl+Left/Right), 81/82 = same with Ctrl+Shift
+defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 32 \
+    '<dict><key>enabled</key><false/><key>value</key><dict><key>parameters</key><array><integer>65535</integer><integer>126</integer><integer>262144</integer></array><key>type</key><string>standard</string></dict></dict>'
+defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 33 \
+    '<dict><key>enabled</key><false/><key>value</key><dict><key>parameters</key><array><integer>65535</integer><integer>125</integer><integer>262144</integer></array><key>type</key><string>standard</string></dict></dict>'
+defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 79 \
+    '<dict><key>enabled</key><false/><key>value</key><dict><key>parameters</key><array><integer>65535</integer><integer>123</integer><integer>262144</integer></array><key>type</key><string>standard</string></dict></dict>'
+defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 80 \
+    '<dict><key>enabled</key><false/><key>value</key><dict><key>parameters</key><array><integer>65535</integer><integer>124</integer><integer>262144</integer></array><key>type</key><string>standard</string></dict></dict>'
+defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 81 \
+    '<dict><key>enabled</key><false/><key>value</key><dict><key>parameters</key><array><integer>65535</integer><integer>123</integer><integer>393216</integer></array><key>type</key><string>standard</string></dict></dict>'
+defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 82 \
+    '<dict><key>enabled</key><false/><key>value</key><dict><key>parameters</key><array><integer>65535</integer><integer>124</integer><integer>393216</integer></array><key>type</key><string>standard</string></dict></dict>'
+/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
+echo "  Keyboard shortcuts: Ctrl+Arrow (Mission Control, Spaces) disabled for AltTab compatibility"
 
 # ---- Step 3: AltTab settings ----
 echo "[3/8] Configuring AltTab"
@@ -106,7 +125,8 @@ ALTTAB_PLIST="$HOME/Library/Preferences/com.lwouis.alt-tab-macos.plist"
 defaults write com.lwouis.alt-tab-macos showMinimizedWindows -int 0
 defaults write com.lwouis.alt-tab-macos showHiddenWindows -int 0
 defaults write com.lwouis.alt-tab-macos menubarIconShown -bool false
-echo "  AltTab: hold=Control, hide minimized/hidden, no menu bar icon"
+defaults write com.lwouis.alt-tab-macos arrowKeysEnabled -bool true
+echo "  AltTab: hold=Control, arrow keys enabled, hide minimized/hidden, no menu bar icon"
 
 # ---- Step 4: Maccy settings ----
 echo "[4/9] Configuring Maccy"
