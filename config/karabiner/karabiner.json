@@ -16,10 +16,10 @@
                         ]
                     },
                     {
-                        "description": "Terminal: Ctrl+Arrow moves by word (Esc+b / Esc+f)",
+                        "description": "Terminal: Ctrl+Arrow moves by word (Option+b / Option+f)",
                         "manipulators": [
-                            { "type": "basic", "from": { "key_code": "left_arrow", "modifiers": { "mandatory": ["command"], "optional": [] } }, "to": [{ "key_code": "escape" }, { "key_code": "b" }], "conditions": [{ "type": "frontmost_application_if", "bundle_identifiers": ["^com\\.mitchellh\\.ghostty$", "^com\\.apple\\.Terminal$"] }] },
-                            { "type": "basic", "from": { "key_code": "right_arrow", "modifiers": { "mandatory": ["command"], "optional": [] } }, "to": [{ "key_code": "escape" }, { "key_code": "f" }], "conditions": [{ "type": "frontmost_application_if", "bundle_identifiers": ["^com\\.mitchellh\\.ghostty$", "^com\\.apple\\.Terminal$"] }] }
+                            { "type": "basic", "from": { "key_code": "left_arrow", "modifiers": { "mandatory": ["command"], "optional": [] } }, "to": [{ "key_code": "b", "modifiers": ["left_option"] }], "conditions": [{ "type": "frontmost_application_if", "bundle_identifiers": ["^com\\.mitchellh\\.ghostty$", "^com\\.apple\\.Terminal$"] }] },
+                            { "type": "basic", "from": { "key_code": "right_arrow", "modifiers": { "mandatory": ["command"], "optional": [] } }, "to": [{ "key_code": "f", "modifiers": ["left_option"] }], "conditions": [{ "type": "frontmost_application_if", "bundle_identifiers": ["^com\\.mitchellh\\.ghostty$", "^com\\.apple\\.Terminal$"] }] }
                         ]
                     },
                     {
@@ -281,10 +281,10 @@
                         ]
                     },
                     {
-                        "description": "Alt+Shift switches input source (via Ctrl+Space)",
+                        "description": "Alt+Shift switches input source (direct Carbon API)",
                         "manipulators": [
-                            { "type": "basic", "from": { "key_code": "left_shift", "modifiers": { "mandatory": ["control"], "optional": [] } }, "to": [{ "key_code": "left_shift", "modifiers": ["left_control"] }], "to_if_alone": [{ "key_code": "spacebar", "modifiers": ["left_control"] }] },
-                            { "type": "basic", "from": { "key_code": "left_control", "modifiers": { "mandatory": ["shift"], "optional": [] } }, "to": [{ "key_code": "left_control", "modifiers": ["left_shift"] }], "to_if_alone": [{ "key_code": "spacebar", "modifiers": ["left_control"] }] }
+                            { "type": "basic", "from": { "key_code": "left_shift", "modifiers": { "mandatory": ["control"], "optional": [] } }, "to": [{ "key_code": "left_shift", "modifiers": ["left_control"] }], "to_if_alone": [{ "shell_command": "$HOME/.local/bin/toggle-input-source" }], "parameters": { "basic.to_if_alone_timeout_milliseconds": 2000 } },
+                            { "type": "basic", "from": { "key_code": "left_control", "modifiers": { "mandatory": ["shift"], "optional": [] } }, "to": [{ "key_code": "left_control", "modifiers": ["left_shift"] }], "to_if_alone": [{ "shell_command": "$HOME/.local/bin/toggle-input-source" }], "parameters": { "basic.to_if_alone_timeout_milliseconds": 2000 } }
                         ]
                     },
                     {
@@ -312,6 +312,12 @@
                                 ],
                                 "type": "basic"
                             }
+                        ]
+                    },
+                    {
+                        "description": "DEL key (forward delete) works in terminals",
+                        "manipulators": [
+                            { "type": "basic", "from": { "key_code": "delete_forward", "modifiers": { "optional": ["any"] } }, "to": [{ "key_code": "delete_or_backspace", "modifiers": ["fn"] }], "conditions": [{ "type": "frontmost_application_if", "bundle_identifiers": ["^com\\.mitchellh\\.ghostty$", "^com\\.apple\\.Terminal$"] }] }
                         ]
                     },
                     {

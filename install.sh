@@ -64,7 +64,7 @@ echo "=== macOS Windows Keyboard Setup — Install ==="
 echo ""
 
 # ---- Step 1: Install apps via Homebrew ----
-echo "[1/8] Installing apps via Homebrew"
+echo "[1/10] Installing apps via Homebrew"
 if ! command -v brew &>/dev/null; then
     echo "  Homebrew not found. Install it first:"
     echo '  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
@@ -74,7 +74,7 @@ brew install --cask karabiner-elements rectangle alt-tab maccy ghostty unnatural
 echo "  Apps installed (already-installed apps were skipped)"
 
 # ---- Step 2: macOS system defaults ----
-echo "[2/8] Applying macOS system defaults"
+echo "[2/10] Applying macOS system defaults"
 defaults write com.apple.dock autohide -bool true
 killall Dock 2>/dev/null || true
 echo "  Dock: auto-hide enabled"
@@ -114,7 +114,7 @@ defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 82 \
 echo "  Keyboard shortcuts: Ctrl+Arrow (Mission Control, Spaces) disabled for AltTab compatibility"
 
 # ---- Step 3: AltTab settings ----
-echo "[3/8] Configuring AltTab"
+echo "[3/10] Configuring AltTab"
 killall "AltTab" 2>/dev/null && sleep 1
 # holdShortcut must be written as a ShortcutRecorder binary (AltTab 10.x).
 # We use PlistBuddy to merge the exported plist containing the secureData blob.
@@ -129,25 +129,37 @@ defaults write com.lwouis.alt-tab-macos arrowKeysEnabled -bool true
 echo "  AltTab: hold=Control, arrow keys enabled, hide minimized/hidden, no menu bar icon"
 
 # ---- Step 4: Maccy settings ----
-echo "[4/9] Configuring Maccy"
+echo "[4/10] Configuring Maccy"
 killall "Maccy" 2>/dev/null && sleep 1
 defaults write org.p0deje.Maccy KeyboardShortcuts_popup -string '{"carbonKeyCode":9,"carbonModifiers":2048}'
 defaults write org.p0deje.Maccy pasteByDefault -bool true
 defaults write org.p0deje.Maccy menubarIconShown -bool false
 echo "  Maccy: hotkey set to Option+V (Win+V), auto-paste enabled, no menu bar icon"
 
-# ---- Step 5: Karabiner config ----
-echo "[5/9] Installing Karabiner config"
+# ---- Step 5: Compile and install helper binaries ----
+echo "[5/10] Compiling helper binaries"
+mkdir -p "$HOME/.local/bin"
+if command -v swiftc &>/dev/null; then
+    swiftc -O "$SCRIPT_DIR/bin/src/toggle-input-source.swift" -o "$HOME/.local/bin/toggle-input-source" 2>/dev/null
+    echo "  Compiled and installed: ~/.local/bin/toggle-input-source"
+else
+    echo "  WARNING: swiftc not found. Install Xcode Command Line Tools:"
+    echo "    xcode-select --install"
+    echo "  Then re-run this script to compile the input source switcher."
+fi
+
+# ---- Step 6: Karabiner config ----
+echo "[6/10] Installing Karabiner config"
 backup_and_copy "$SCRIPT_DIR/config/karabiner/karabiner.json" \
     "$HOME/.config/karabiner/karabiner.json"
 
-# ---- Step 6: DefaultKeyBinding.dict ----
-echo "[6/9] Installing DefaultKeyBinding.dict"
+# ---- Step 7: DefaultKeyBinding.dict ----
+echo "[7/10] Installing DefaultKeyBinding.dict"
 backup_and_copy "$SCRIPT_DIR/config/keybindings/DefaultKeyBinding.dict" \
     "$HOME/Library/KeyBindings/DefaultKeyBinding.dict"
 
-# ---- Step 7: Ghostty config ----
-echo "[7/9] Installing Ghostty config"
+# ---- Step 8: Ghostty config ----
+echo "[8/10] Installing Ghostty config"
 backup_and_copy "$SCRIPT_DIR/config/ghostty/config" \
     "$HOME/.config/ghostty/config"
 if [[ -f "$SCRIPT_DIR/config/ghostty/icon_256x256@2x.png" ]]; then
@@ -155,8 +167,8 @@ if [[ -f "$SCRIPT_DIR/config/ghostty/icon_256x256@2x.png" ]]; then
         "$HOME/.config/ghostty/icon_256x256@2x.png"
 fi
 
-# ---- Step 8: Login Items ----
-echo "[8/9] Adding apps to Login Items"
+# ---- Step 9: Login Items ----
+echo "[9/10] Adding apps to Login Items"
 add_login_item "Karabiner-Elements"
 add_login_item "Rectangle"
 add_login_item "AltTab"
@@ -165,8 +177,8 @@ add_login_item "UnnaturalScrollWheels"
 add_login_item "RedQuits"
 add_login_item "Ghostty"
 
-# ---- Step 9: Restart affected apps ----
-echo "[9/9] Restarting apps to apply settings"
+# ---- Step 10: Restart affected apps ----
+echo "[10/10] Restarting apps to apply settings"
 killall "AltTab" 2>/dev/null; sleep 1
 open -a "AltTab" && echo "  AltTab restarted" || echo "  AltTab not running (start it manually)"
 open -a "Maccy" && echo "  Maccy started" || echo "  Maccy not running (start it manually)"

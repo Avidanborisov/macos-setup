@@ -69,6 +69,7 @@ If macOS blocks background items, allow them in System Settings → General → 
 | `config/keybindings/DefaultKeyBinding.dict` | Page Up/Down cursor movement | `~/Library/KeyBindings/DefaultKeyBinding.dict` |
 | `config/ghostty/config` | Ghostty terminal config (tmux autostart) | `~/.config/ghostty/config` |
 | `config/ghostty/icon_256x256@2x.png` | Custom Ghostty icon | `~/.config/ghostty/icon_256x256@2x.png` |
+| `bin/src/toggle-input-source.swift` | Swift source for input source toggling (compiled during install) | `~/.local/bin/toggle-input-source` |
 | `install.sh` | Automated installer (apps, defaults, config files) | — |
 
 ---
@@ -168,7 +169,7 @@ After these swaps, all **complex rules** below operate on the remapped codes (e.
 | 8 | Win+D → hide all apps | Show Desktop | Uses osascript to hide all foreground apps, like Windows minimize-all |
 | 9 | Cmd+Space → blocked | Prevent physical Ctrl+Space from opening Spotlight | Physical Ctrl maps to Command; this swallows Cmd+Space at source |
 | 10 | Alt+Space → Cmd+Space | Open Spotlight | Physical Alt → Control; this converts Control+Space to Cmd+Space (Spotlight) |
-| 11 | Win+Space → Ctrl+Space | Switch input source (language) | Physical Win → Option; this converts Option+Space to Ctrl+Space (input switching) |
+| 11 | Alt+Shift (release) → toggle input source | Switch input source (language) | Uses `to_if_alone` to detect release of Alt+Shift, then calls a compiled Swift binary (`toggle-input-source`) that uses the Carbon `TISSelectInputSource` API directly — bypasses symbolic hotkeys entirely for reliable, app-independent switching |
 | 12 | Ctrl+Backspace → Option+Backspace | Delete previous word | macOS word-delete uses Option |
 | 13 | Cmd+Shift+Esc → Activity Monitor | Task Manager equivalent | — |
 | 14 | Terminal: Home/End → Ctrl+A/E | Beginning/end of line in terminals | Cmd+Arrow doesn't map to line nav in shells |
@@ -186,7 +187,7 @@ After these swaps, all **complex rules** below operate on the remapped codes (e.
 - Rule 6 must be placed **before** rule 7 in the config, so that the media-key volume_decrement → F11 fires first, then F11 → fullscreen fires.
 - Rule 8 (Win+D) uses a `shell_command` to hide all foreground apps via osascript, mimicking Windows' minimize-all behavior. Apps can be restored from the Dock or via Alt+Tab.
 - Rule 9 blocks Cmd+Space, so physical Ctrl+Space no longer opens Spotlight after the modifier swaps.
-- Rule 11 maps Win+Space to Ctrl+Space for input source switching (language). This must be placed **after** the Cmd+Space block (rule 9) and Alt+Space Spotlight rule (rule 10) — Karabiner is first-match, and Win+Space uses `option` (not `command` or `control`), so there is no conflict.
+- Rule 11 uses a compiled Swift binary (`~/.local/bin/toggle-input-source`) that calls the macOS Carbon `TISSelectInputSource` API directly to switch input sources. This bypasses symbolic hotkeys (Ctrl+Space) entirely, so it works reliably in every app regardless of what keyboard shortcuts the app intercepts. The `to_if_alone` timeout is set to 2000ms (default is 1000ms) to be more forgiving of slightly slow key releases.
 - Rule 17 converts Cmd+Tab → Cmd+Shift+] (next tab). This replaces the macOS native app switcher, which AltTab already replaces.
 - There is **NO** Karabiner rule for Alt+Tab — AltTab is configured to listen on Control+Tab directly (see Section 6).
 - **F11 on built-in MacBook keyboard**: Use Fn+F11 (physical F-key row) or press Ctrl+Cmd+F directly (maps to Cmd+Control+F = macOS fullscreen after simple mods).
@@ -332,7 +333,7 @@ Enable Ctrl+scroll zoom (Cmd+scroll after remapping). Add to VS Code `settings.j
 | Ctrl+Tab / Ctrl+Shift+Tab | Next / Previous tab |
 | Win+D | Show Desktop (hide all apps) |
 | Alt+Space | Spotlight search |
-| Win+Space | Switch input source (language) |
+| Alt+Shift (press & release) | Switch input source (language) |
 | Win+V | Clipboard history (Maccy) |
 | F11 | Toggle fullscreen |
 | Win+1/2/3 | Open Chrome / Ghostty / IPython |

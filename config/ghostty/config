@@ -5,3 +5,5 @@ font-thicken = true
 confirm-close-surface = false
 macos-icon = custom
 macos-custom-icon = ~/.config/ghostty/icon_256x256@2x.png
+mouse-scroll-multiplier = 1
+macos-option-as-alt = true
