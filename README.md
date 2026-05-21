@@ -34,7 +34,7 @@ Based on [this blog post](https://imoskvin.com/blog/macos-like-windows/).
 
 This will:
 
-1. **Install apps** via Homebrew: Karabiner-Elements, Rectangle, AltTab, Maccy, Ghostty, UnnaturalScrollWheels, RedQuits
+1. **Install apps** via Homebrew: Karabiner-Elements, Rectangle, AltTab, Maccy, Ghostty, UnnaturalScrollWheels, Swift Quit
 2. **Apply macOS defaults**: auto-hide Dock, F-keys as standard, English locale, Ctrl+Space input switching
 3. **Configure AltTab**: Control as hold key, hide minimized/hidden windows
 4. **Copy config files** to their system locations (backs up existing files first):
@@ -46,8 +46,9 @@ This will:
 After running, you'll still need to:
 
 1. Grant **Accessibility** permissions (System Settings → Privacy & Security → Accessibility):
-   - Karabiner (`karabiner_grabber`), Rectangle, AltTab
-   - Maccy (only if you enable "Paste automatically")
+    - Karabiner (`karabiner_grabber`), Rectangle, AltTab
+    - Swift Quit
+    - Maccy (only if you enable "Paste automatically")
 2. Grant **Input Monitoring** (System Settings → Privacy & Security → Input Monitoring):
    - Karabiner (`karabiner_grabber`, `karabiner_observer`)
 3. **Import Rectangle config**: Rectangle → Settings → Import → select `config/rectangle/RectangleConfig.json`
@@ -63,13 +64,12 @@ If macOS blocks background items, allow them in System Settings → General → 
 
 | File | Purpose | System Location |
 |------|---------|-----------------|
-| `config/karabiner/karabiner.json` | Key remapping (19 rules + per-device mods) | `~/.config/karabiner/karabiner.json` |
+| `config/karabiner/karabiner.json` | Key remapping (19 rules + generic built-in/external modifier mapping) | `~/.config/karabiner/karabiner.json` |
 | `config/alttab/holdShortcut.plist` | AltTab hold shortcut (Control, in ShortcutRecorder binary format) | Written to AltTab prefs via PlistBuddy |
 | `config/rectangle/RectangleConfig.json` | Window snapping (Win+Arrows) | Import via Rectangle UI |
 | `config/keybindings/DefaultKeyBinding.dict` | Page Up/Down cursor movement | `~/Library/KeyBindings/DefaultKeyBinding.dict` |
 | `config/ghostty/config` | Ghostty terminal config (tmux autostart) | `~/.config/ghostty/config` |
 | `config/ghostty/icon_256x256@2x.png` | Custom Ghostty icon | `~/.config/ghostty/icon_256x256@2x.png` |
-| `bin/src/toggle-input-source.swift` | Swift source for input source toggling (compiled during install) | `~/.local/bin/toggle-input-source` |
 | `install.sh` | Automated installer (apps, defaults, config files) | — |
 
 ---
@@ -118,9 +118,9 @@ defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 60 \
 
 On a Windows keyboard the bottom-left modifiers are: `Ctrl | Win | Alt`. On macOS the same physical positions are: `Control | Option | Command`.
 
-**Simple modifications** swap the modifier keys so each physical key does what its label says. Because the MacBook's built-in keyboard has a different physical layout (`Control | Option | Command`) from the external Windows keyboard (`Ctrl | Win | Alt`), the modifier mapping is **per-device**.
+The modifier mapping is handled by Karabiner complex rules, with one path for the built-in keyboard and one path for any external keyboard. This keeps the layout consistent without hardcoded vendor/product IDs.
 
-#### Profile-level simple modifications (apply to all keyboards, tuned for built-in)
+#### Built-in keyboard mapping
 
 | From | To | Effect on built-in keyboard |
 |---|---|---|
@@ -132,16 +132,16 @@ On a Windows keyboard the bottom-left modifiers are: `Ctrl | Win | Alt`. On macO
 
 On the built-in keyboard, **Option stays as Option** (no mapping), so it acts as the Win key.
 
-#### Device-specific overrides (Logitech external keyboard — vendor 1133, product 50475)
+#### External keyboard mapping
 
 | From | To | Effect on external keyboard |
 |---|---|---|
-| `left_command` | `left_option` | Win → Option (overrides profile) |
+| `left_command` | `left_option` | Win → Option |
 | `left_option` | `left_control` | Alt → Control |
 | `right_command` | `right_option` | Same for right side |
 | `right_option` | `right_control` | Same for right side |
 
-Profile-level `left_control → left_command` still applies (not overridden), so Ctrl → Cmd works on both keyboards.
+`left_control → left_command` still applies on external keyboards, so Ctrl → Cmd works there too.
 
 #### Net result on both keyboards
 
@@ -153,7 +153,7 @@ Profile-level `left_control → left_command` still applies (not overridden), so
 
 After these swaps, all **complex rules** below operate on the remapped codes (e.g. Win = `option` in rules on both keyboards).
 
-> **Adding a different external keyboard?** Open Karabiner-Elements → Devices tab to find the new keyboard's vendor/product ID, then add another entry to the `devices` array with the same simple_modifications as the Logitech entry.
+Any external keyboard now uses the same external-keyboard mapping automatically; there is no vendor/product-specific device entry to maintain.
 
 ### 4.2 Complex rules summary
 
@@ -169,7 +169,7 @@ After these swaps, all **complex rules** below operate on the remapped codes (e.
 | 8 | Win+D → hide all apps | Show Desktop | Uses osascript to hide all foreground apps, like Windows minimize-all |
 | 9 | Cmd+Space → blocked | Prevent physical Ctrl+Space from opening Spotlight | Physical Ctrl maps to Command; this swallows Cmd+Space at source |
 | 10 | Alt+Space → Cmd+Space | Open Spotlight | Physical Alt → Control; this converts Control+Space to Cmd+Space (Spotlight) |
-| 11 | Alt+Shift (release) → toggle input source | Switch input source (language) | Uses `to_if_alone` to detect release of Alt+Shift, then calls a compiled Swift binary (`toggle-input-source`) that uses the Carbon `TISSelectInputSource` API directly — bypasses symbolic hotkeys entirely for reliable, app-independent switching |
+| 11 | Alt+Shift (release) → toggle input source | Switch input source (language) | Uses `to_if_alone` to detect release of Alt+Shift on either left/right modifier pair, then sends `Ctrl+Space`, which macOS handles as input-source switching |
 | 12 | Ctrl+Backspace → Option+Backspace | Delete previous word | macOS word-delete uses Option |
 | 13 | Cmd+Shift+Esc → Activity Monitor | Task Manager equivalent | — |
 | 14 | Terminal: Home/End → Ctrl+A/E | Beginning/end of line in terminals | Cmd+Arrow doesn't map to line nav in shells |
@@ -187,7 +187,7 @@ After these swaps, all **complex rules** below operate on the remapped codes (e.
 - Rule 6 must be placed **before** rule 7 in the config, so that the media-key volume_decrement → F11 fires first, then F11 → fullscreen fires.
 - Rule 8 (Win+D) uses a `shell_command` to hide all foreground apps via osascript, mimicking Windows' minimize-all behavior. Apps can be restored from the Dock or via Alt+Tab.
 - Rule 9 blocks Cmd+Space, so physical Ctrl+Space no longer opens Spotlight after the modifier swaps.
-- Rule 11 uses a compiled Swift binary (`~/.local/bin/toggle-input-source`) that calls the macOS Carbon `TISSelectInputSource` API directly to switch input sources. This bypasses symbolic hotkeys (Ctrl+Space) entirely, so it works reliably in every app regardless of what keyboard shortcuts the app intercepts. The `to_if_alone` timeout is set to 2000ms (default is 1000ms) to be more forgiving of slightly slow key releases.
+- Rule 11 sends `Ctrl+Space` on Alt+Shift release. It accepts either left/right `Alt+Shift`, relies on the macOS input-source shortcut configured in Section 3, and uses a 2000ms `to_if_alone` timeout (default is 1000ms) to be more forgiving of slightly slow key releases.
 - Rule 17 converts Cmd+Tab → Cmd+Shift+] (next tab). This replaces the macOS native app switcher, which AltTab already replaces.
 - There is **NO** Karabiner rule for Alt+Tab — AltTab is configured to listen on Control+Tab directly (see Section 6).
 - **F11 on built-in MacBook keyboard**: Use Fn+F11 (physical F-key row) or press Ctrl+Cmd+F directly (maps to Cmd+Control+F = macOS fullscreen after simple mods).
@@ -288,9 +288,9 @@ cp config/keybindings/DefaultKeyBinding.dict ~/Library/KeyBindings/DefaultKeyBin
 
 ## 9. Red X Button — Quit on Close
 
-By default, macOS's red close button only closes the window — the app keeps running in the Dock. On Windows, clicking X quits the application. **RedQuits** restores this behavior: when you close the last window of an app, it quits the app entirely.
+By default, macOS's red close button only closes the window — the app keeps running in the Dock. On Windows, clicking X quits the application. **Swift Quit** restores this behavior: when you close the last window of an app, it quits the app entirely.
 
-Installed automatically by `./install.sh`, which also adds RedQuits to Login Items. If macOS blocks background items, allow it in System Settings → General → Login Items. No further configuration is needed.
+Installed automatically by `./install.sh`, which also adds Swift Quit to Login Items and starts it immediately. It also needs to be allowed in System Settings -> Privacy & Security -> Accessibility, or it cannot observe window-close events. If macOS blocks background items, allow it in System Settings -> General -> Login Items.
 
 > **Note**: Some macOS apps (e.g. Finder, menu bar apps) intentionally have no windows and are unaffected.
 
@@ -300,7 +300,7 @@ Installed automatically by `./install.sh`, which also adds RedQuits to Login Ite
 
 macOS "natural scrolling" is inverted compared to Windows for mouse wheels. **UnnaturalScrollWheels** reverses scroll direction for mouse only, keeping trackpad natural scrolling intact.
 
-Installed automatically by `./install.sh`, which also adds it to Login Items. If macOS blocks background items, allow it in System Settings → General → Login Items.
+Installed automatically by `./install.sh`, which also writes the app's reverse-wheel settings, adds it to Login Items, and restarts it. If macOS blocks background items, allow it in System Settings → General → Login Items.
 
 ---
 

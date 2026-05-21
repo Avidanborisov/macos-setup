@@ -7,6 +7,28 @@
             "complex_modifications": {
                 "rules": [
                     {
+                        "description": "Built-in keyboard modifier mapping",
+                        "manipulators": [
+                            { "type": "basic", "from": { "key_code": "left_control", "modifiers": { "optional": ["any"] } }, "to": [{ "key_code": "left_command", "lazy": true }], "conditions": [{ "type": "device_if", "identifiers": [{ "is_built_in_keyboard": true }] }] },
+                            { "type": "basic", "from": { "key_code": "left_command", "modifiers": { "optional": ["any"] } }, "to": [{ "key_code": "left_control", "lazy": true }], "conditions": [{ "type": "device_if", "identifiers": [{ "is_built_in_keyboard": true }] }] },
+                            { "type": "basic", "from": { "key_code": "right_control", "modifiers": { "optional": ["any"] } }, "to": [{ "key_code": "right_command", "lazy": true }], "conditions": [{ "type": "device_if", "identifiers": [{ "is_built_in_keyboard": true }] }] },
+                            { "type": "basic", "from": { "key_code": "right_command", "modifiers": { "optional": ["any"] } }, "to": [{ "key_code": "right_control", "lazy": true }], "conditions": [{ "type": "device_if", "identifiers": [{ "is_built_in_keyboard": true }] }] },
+                            { "type": "basic", "from": { "key_code": "non_us_backslash" }, "to": [{ "key_code": "grave_accent_and_tilde" }], "conditions": [{ "type": "device_if", "identifiers": [{ "is_built_in_keyboard": true }] }] }
+                        ]
+                    },
+                    {
+                        "description": "External keyboard modifier mapping",
+                        "manipulators": [
+                            { "type": "basic", "from": { "key_code": "left_control", "modifiers": { "optional": ["any"] } }, "to": [{ "key_code": "left_command", "lazy": true }], "conditions": [{ "type": "device_unless", "identifiers": [{ "is_built_in_keyboard": true }] }] },
+                            { "type": "basic", "from": { "key_code": "left_command", "modifiers": { "optional": ["any"] } }, "to": [{ "key_code": "left_option", "lazy": true }], "conditions": [{ "type": "device_unless", "identifiers": [{ "is_built_in_keyboard": true }] }] },
+                            { "type": "basic", "from": { "key_code": "left_option", "modifiers": { "optional": ["any"] } }, "to": [{ "key_code": "left_control", "lazy": true }], "conditions": [{ "type": "device_unless", "identifiers": [{ "is_built_in_keyboard": true }] }] },
+                            { "type": "basic", "from": { "key_code": "right_control", "modifiers": { "optional": ["any"] } }, "to": [{ "key_code": "right_command", "lazy": true }], "conditions": [{ "type": "device_unless", "identifiers": [{ "is_built_in_keyboard": true }] }] },
+                            { "type": "basic", "from": { "key_code": "right_command", "modifiers": { "optional": ["any"] } }, "to": [{ "key_code": "right_option", "lazy": true }], "conditions": [{ "type": "device_unless", "identifiers": [{ "is_built_in_keyboard": true }] }] },
+                            { "type": "basic", "from": { "key_code": "right_option", "modifiers": { "optional": ["any"] } }, "to": [{ "key_code": "right_control", "lazy": true }], "conditions": [{ "type": "device_unless", "identifiers": [{ "is_built_in_keyboard": true }] }] },
+                            { "type": "basic", "from": { "key_code": "non_us_backslash" }, "to": [{ "key_code": "grave_accent_and_tilde" }], "conditions": [{ "type": "device_unless", "identifiers": [{ "is_built_in_keyboard": true }] }] }
+                        ]
+                    },
+                    {
                         "description": "Win+Arrow snaps windows (for Rectangle)",
                         "manipulators": [
                             { "type": "basic", "from": { "key_code": "left_arrow", "modifiers": { "mandatory": ["option"], "optional": [] } }, "to": [{ "key_code": "left_arrow", "modifiers": ["left_control", "left_option"] }] },
@@ -281,10 +303,12 @@
                         ]
                     },
                     {
-                        "description": "Alt+Shift switches input source (direct Carbon API)",
+                        "description": "Alt+Shift switches input source (via Ctrl+Space)",
                         "manipulators": [
-                            { "type": "basic", "from": { "key_code": "left_shift", "modifiers": { "mandatory": ["control"], "optional": [] } }, "to": [{ "key_code": "left_shift", "modifiers": ["left_control"] }], "to_if_alone": [{ "shell_command": "$HOME/.local/bin/toggle-input-source" }], "parameters": { "basic.to_if_alone_timeout_milliseconds": 2000 } },
-                            { "type": "basic", "from": { "key_code": "left_control", "modifiers": { "mandatory": ["shift"], "optional": [] } }, "to": [{ "key_code": "left_control", "modifiers": ["left_shift"] }], "to_if_alone": [{ "shell_command": "$HOME/.local/bin/toggle-input-source" }], "parameters": { "basic.to_if_alone_timeout_milliseconds": 2000 } }
+                            { "type": "basic", "from": { "key_code": "left_shift", "modifiers": { "mandatory": ["control"], "optional": [] } }, "to": [{ "key_code": "left_shift", "modifiers": ["left_control"] }], "to_if_alone": [{ "key_code": "spacebar", "modifiers": ["left_control"] }], "parameters": { "basic.to_if_alone_timeout_milliseconds": 2000 } },
+                            { "type": "basic", "from": { "key_code": "right_shift", "modifiers": { "mandatory": ["control"], "optional": [] } }, "to": [{ "key_code": "right_shift", "modifiers": ["right_control"] }], "to_if_alone": [{ "key_code": "spacebar", "modifiers": ["left_control"] }], "parameters": { "basic.to_if_alone_timeout_milliseconds": 2000 } },
+                            { "type": "basic", "from": { "key_code": "left_control", "modifiers": { "mandatory": ["shift"], "optional": [] } }, "to": [{ "key_code": "left_control", "modifiers": ["left_shift"] }], "to_if_alone": [{ "key_code": "spacebar", "modifiers": ["left_control"] }], "parameters": { "basic.to_if_alone_timeout_milliseconds": 2000 } },
+                            { "type": "basic", "from": { "key_code": "right_control", "modifiers": { "mandatory": ["shift"], "optional": [] } }, "to": [{ "key_code": "right_control", "modifiers": ["right_shift"] }], "to_if_alone": [{ "key_code": "spacebar", "modifiers": ["left_control"] }], "parameters": { "basic.to_if_alone_timeout_milliseconds": 2000 } }
                         ]
                     },
                     {
@@ -401,28 +425,8 @@
             },
             "name": "Default profile",
             "selected": true,
-            "simple_modifications": [
-                { "from": { "key_code": "left_control" }, "to": [{ "key_code": "left_command" }] },
-                { "from": { "key_code": "left_command" }, "to": [{ "key_code": "left_control" }] },
-                { "from": { "key_code": "right_control" }, "to": [{ "key_code": "right_command" }] },
-                { "from": { "key_code": "right_command" }, "to": [{ "key_code": "right_control" }] },
-                { "from": { "key_code": "non_us_backslash" }, "to": [{ "key_code": "grave_accent_and_tilde" }] }
-            ],
-            "devices": [
-                {
-                    "identifiers": {
-                        "is_keyboard": true,
-                        "product_id": 50475,
-                        "vendor_id": 1133
-                    },
-                    "simple_modifications": [
-                        { "from": { "key_code": "left_command" }, "to": [{ "key_code": "left_option" }] },
-                        { "from": { "key_code": "left_option" }, "to": [{ "key_code": "left_control" }] },
-                        { "from": { "key_code": "right_command" }, "to": [{ "key_code": "right_option" }] },
-                        { "from": { "key_code": "right_option" }, "to": [{ "key_code": "right_control" }] }
-                    ]
-                }
-            ],
+            "simple_modifications": [],
+            "devices": [],
             "virtual_hid_keyboard": {
                 "keyboard_type_v2": "ansi"
             }
