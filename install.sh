@@ -60,6 +60,57 @@ add_login_item() {
     echo "  - Added $app_name to Login Items"
 }
 
+install_karabiner_config() {
+    local src="$1"
+    local dest="$2"
+    local dest_dir
+    local connected_devices_json
+
+    dest_dir="$(dirname "$dest")"
+    mkdir -p "$dest_dir"
+
+    if [[ -e "$dest" ]]; then
+        echo "  Backing up existing: $dest -> ${dest}${BACKUP_SUFFIX}"
+        cp "$dest" "${dest}${BACKUP_SUFFIX}"
+    fi
+
+    connected_devices_json="$("/Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_cli" --list-connected-devices 2>/dev/null || printf '[]')"
+
+    jq --argjson connected_devices "$connected_devices_json" '
+        .profiles[0].devices = (
+            .profiles[0].devices
+            + (
+                $connected_devices
+                | map(
+                    select(.device_identifiers.is_keyboard == true)
+                    | select((.is_built_in_keyboard // false) | not)
+                    | select((.is_built_in_touch_bar // false) | not)
+                    | select((.device_identifiers.is_virtual_device // false) | not)
+                    | select(.device_identifiers.vendor_id != null and .device_identifiers.product_id != null)
+                    | {
+                        identifiers: {
+                            is_keyboard: true,
+                            vendor_id: .device_identifiers.vendor_id,
+                            product_id: .device_identifiers.product_id
+                        },
+                        simple_modifications: [
+                            { from: { key_code: "left_control" }, to: [{ key_code: "left_command" }] },
+                            { from: { key_code: "left_command" }, to: [{ key_code: "left_option" }] },
+                            { from: { key_code: "left_option" }, to: [{ key_code: "left_control" }] },
+                            { from: { key_code: "right_control" }, to: [{ key_code: "right_command" }] },
+                            { from: { key_code: "right_command" }, to: [{ key_code: "right_option" }] },
+                            { from: { key_code: "right_option" }, to: [{ key_code: "right_control" }] }
+                        ]
+                    }
+                )
+                | unique_by(.identifiers.vendor_id, .identifiers.product_id)
+            )
+        )
+    ' "$src" > "$dest"
+
+    echo "  Installed: $dest"
+}
+
 echo "=== macOS Windows Keyboard Setup — Install ==="
 echo ""
 
@@ -145,7 +196,7 @@ echo "  Maccy: hotkey set to Option+V (Win+V), auto-paste enabled, no menu bar i
 
 # ---- Step 5: Karabiner config ----
 echo "[5/9] Installing Karabiner config"
-backup_and_copy "$SCRIPT_DIR/config/karabiner/karabiner.json" \
+install_karabiner_config "$SCRIPT_DIR/config/karabiner/karabiner.json" \
     "$HOME/.config/karabiner/karabiner.json"
 
 # ---- Step 6: DefaultKeyBinding.dict ----

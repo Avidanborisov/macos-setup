@@ -118,7 +118,7 @@ defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 60 \
 
 On a Windows keyboard the bottom-left modifiers are: `Ctrl | Win | Alt`. On macOS the same physical positions are: `Control | Option | Command`.
 
-The modifier mapping is handled by Karabiner complex rules, with one path for the built-in keyboard and one path for any external keyboard. This keeps the layout consistent without hardcoded vendor/product IDs.
+The modifier mapping is handled by Karabiner device-specific `simple_modifications`, because that stage has to happen before the complex rules. The repo keeps the built-in mapping, and `./install.sh` detects currently connected external keyboards and generates matching external-keyboard device entries automatically. This avoids hardcoded vendor/product IDs in the repo while preserving the normal simple-modifications-before-complex-modifications behavior.
 
 #### Built-in keyboard mapping
 
@@ -153,7 +153,7 @@ On the built-in keyboard, **Option stays as Option** (no mapping), so it acts as
 
 After these swaps, all **complex rules** below operate on the remapped codes (e.g. Win = `option` in rules on both keyboards).
 
-Any external keyboard now uses the same external-keyboard mapping automatically; there is no vendor/product-specific device entry to maintain.
+External keyboard entries are generated automatically by `./install.sh` from the keyboards Karabiner currently sees as connected. If you add a new external keyboard later, connect it once and re-run `./install.sh`.
 
 ### 4.2 Complex rules summary
 
@@ -169,7 +169,7 @@ Any external keyboard now uses the same external-keyboard mapping automatically;
 | 8 | Win+D → hide all apps | Show Desktop | Uses osascript to hide all foreground apps, like Windows minimize-all |
 | 9 | Cmd+Space → blocked | Prevent physical Ctrl+Space from opening Spotlight | Physical Ctrl maps to Command; this swallows Cmd+Space at source |
 | 10 | Alt+Space → Cmd+Space | Open Spotlight | Physical Alt → Control; this converts Control+Space to Cmd+Space (Spotlight) |
-| 11 | Alt+Shift (release) → toggle input source | Switch input source (language) | Uses `to_if_alone` to detect release of Alt+Shift on either left/right modifier pair, then sends `Ctrl+Space`, which macOS handles as input-source switching |
+| 11 | Alt+Shift (release) → toggle input source | Switch input source (language) | Uses `to_if_alone` to detect release of Alt+Shift on either left/right modifier pair, then uses Karabiner's built-in `select_input_source` action to switch between ABC and Hebrew directly |
 | 12 | Ctrl+Backspace → Option+Backspace | Delete previous word | macOS word-delete uses Option |
 | 13 | Cmd+Shift+Esc → Activity Monitor | Task Manager equivalent | — |
 | 14 | Terminal: Home/End → Ctrl+A/E | Beginning/end of line in terminals | Cmd+Arrow doesn't map to line nav in shells |
@@ -187,7 +187,7 @@ Any external keyboard now uses the same external-keyboard mapping automatically;
 - Rule 6 must be placed **before** rule 7 in the config, so that the media-key volume_decrement → F11 fires first, then F11 → fullscreen fires.
 - Rule 8 (Win+D) uses a `shell_command` to hide all foreground apps via osascript, mimicking Windows' minimize-all behavior. Apps can be restored from the Dock or via Alt+Tab.
 - Rule 9 blocks Cmd+Space, so physical Ctrl+Space no longer opens Spotlight after the modifier swaps.
-- Rule 11 sends `Ctrl+Space` on Alt+Shift release. It accepts either left/right `Alt+Shift`, relies on the macOS input-source shortcut configured in Section 3, and uses a 2000ms `to_if_alone` timeout (default is 1000ms) to be more forgiving of slightly slow key releases.
+- Rule 11 switches input sources directly inside Karabiner using `select_input_source`. It accepts either left/right `Alt+Shift`, does not depend on the macOS `Ctrl+Space` symbolic hotkey, and uses a 2000ms `to_if_alone` timeout (default is 1000ms) to be more forgiving of slightly slow key releases.
 - Rule 17 converts Cmd+Tab → Cmd+Shift+] (next tab). This replaces the macOS native app switcher, which AltTab already replaces.
 - There is **NO** Karabiner rule for Alt+Tab — AltTab is configured to listen on Control+Tab directly (see Section 6).
 - **F11 on built-in MacBook keyboard**: Use Fn+F11 (physical F-key row) or press Ctrl+Cmd+F directly (maps to Cmd+Control+F = macOS fullscreen after simple mods).
