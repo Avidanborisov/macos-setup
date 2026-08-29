@@ -1,7 +1,7 @@
 """Registry of all managed components (order = display/apply order)."""
 
 from .brew import Brew
-from .system import Dock, SystemDefaults, SymbolicHotkeys, ZshrcBlock
+from .system import Dock, InputSources, SystemDefaults, SymbolicHotkeys, ZshrcBlock
 from .karabiner import Karabiner
 from .files import CocoaKeybindings, Ghostty, Scripts, Tmux
 from .apps import (AltTab, DockDoor, Finder, LoginItems, Maccy, Rectangle,
@@ -11,6 +11,7 @@ ALL = [
     Brew(),
     SystemDefaults(),
     Dock(),
+    InputSources(),
     SymbolicHotkeys(),
     Karabiner(),
     CocoaKeybindings(),

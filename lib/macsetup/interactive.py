@@ -164,6 +164,10 @@ def gui_tests():
         GuiTest("Alt+Shift switches language",
                 "Press and release physical Alt+Shift, then type a letter somewhere.",
                 "Did the input language toggle (ABC <-> Hebrew)?"),
+        GuiTest("Ctrl+RightShift makes paragraph RTL",
+                "In TextEdit, type a line, then hold physical Ctrl and tap Right Shift "
+                "(then Ctrl+LeftShift to go back).",
+                "Did the paragraph flip to right-aligned RTL and back?"),
         GuiTest("Ctrl+Tab switches tabs",
                 "In a browser with 2+ tabs, hold physical Ctrl and press Tab.",
                 "Did it switch to the next tab?"),

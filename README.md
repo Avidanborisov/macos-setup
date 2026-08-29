@@ -31,7 +31,8 @@ off, run `./macsetup doctor` — it reports exactly which setting drifted, and
 | Component | What it manages |
 |---|---|
 | `brew` | GUI apps (Karabiner-Elements, Rectangle, AltTab, Maccy, Ghostty, UnnaturalScrollWheels, Swift Quit) and CLI tools |
-| `system` | F-keys as F-keys, English locale, trackpad stays natural |
+| `system` | F-keys as F-keys, English locale, trackpad stays natural, snappy window animations, Writing Direction menu shortcuts |
+| `input` | Keyboard layouts: English (ABC) + Hebrew enabled out of the box (Alt+Shift toggles) |
 | `dock` | Windows-taskbar-style Dock: instant reveal at the bottom of *any* display (a pinned Dock only exists on one screen — macOS limitation), compact tiles, no magnification, minimize into app icon |
 | `hotkeys` | macOS symbolic hotkeys: Ctrl+Arrow Mission Control/Spaces shortcuts off (they'd steal AltTab's arrow navigation); Ctrl+Space input switching off (Karabiner switches language directly, and VS Code needs Ctrl+Space for autocomplete); Show Desktop rebound to F17 for Win+D |
 | `karabiner` | All key remapping (template in `config/karabiner/` + auto-generated per-device modifier swaps) |
@@ -98,6 +99,7 @@ keyboards that aren't currently connected are preserved.
 | Finder: F2 / Del / Ctrl+X,V / Alt+Up | Rename / move to Trash / cut-paste files / parent folder |
 | Ctrl+Space | Autocomplete in VS Code / Antigravity, blocked elsewhere; Alt+Space → Cmd+Space opens Spotlight |
 | Alt+Shift (tap) | Toggle input source ABC ↔ Hebrew (`select_input_source`, 2s tap window) |
+| Ctrl+LeftShift / Ctrl+RightShift (tap) | Paragraph direction LTR / RTL (right-aligned for Hebrew), like Windows. Sends Cmd+Opt+Ctrl+L/R, which `NSUserKeyEquivalents` binds to the "Left to Right"/"Right to Left" Writing Direction menu items (Cocoa apps: TextEdit, Notes, Mail, Pages…) |
 | Ctrl+Backspace → Option+Backspace | Delete previous word |
 | Terminal: DEL → forward delete | Forward delete works in terminals |
 | Cmd+Shift+Esc | Activity Monitor (Task Manager) |
@@ -211,6 +213,7 @@ Finish with `./macsetup doctor` and `./macsetup test -i`.
 | F2 / Del / Ctrl+X,V / Alt+Up/Left/Right | In Finder: rename / delete / cut-paste / navigate |
 | Alt+Space | Spotlight |
 | Alt+Shift (tap) | Switch language (ABC ↔ Hebrew) |
+| Ctrl+LeftShift / Ctrl+RightShift (tap) | Paragraph direction LTR / RTL (Hebrew right-align) |
 | Win+V | Clipboard history (Maccy) |
 | Win+1/2/3 | Chrome / Ghostty / IPython |
 | Win+L | Lock screen |

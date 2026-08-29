@@ -52,6 +52,16 @@ class SystemDefaults(Component):
             # Snappier window zoom/resize animations (maximize, restore,
             # Rectangle snapping). Kept non-zero so motion stays visible.
             "NSWindowResizeTime": 0.05,
+            # Global menu-item shortcuts for Format > Text > Writing Direction
+            # ("Paragraph" items match first). Karabiner sends these chords on
+            # a Ctrl+LeftShift / Ctrl+RightShift tap, like Windows. The
+            # makeBaseWritingDirection* selectors can't be used from
+            # DefaultKeyBinding.dict — they take the direction from the
+            # sender's tag, which key bindings don't have (verified).
+            "NSUserKeyEquivalents": {
+                "Left to Right": "@~^l",
+                "Right to Left": "@~^r",
+            },
         }),
     ]
 
@@ -66,6 +76,45 @@ class SystemDefaults(Component):
         for spec in self.specs:
             actions.extend(spec.apply())
         return actions
+
+
+class InputSources(Component):
+    name = "input"
+    description = "Keyboard layouts: English (ABC) + Hebrew enabled, toggled with Alt+Shift"
+
+    DOMAIN = "com.apple.HIToolbox"
+    KEY = "AppleEnabledInputSources"
+    LAYOUTS = [
+        {"InputSourceKind": "Keyboard Layout",
+         "KeyboardLayout ID": 252, "KeyboardLayout Name": "ABC"},
+        {"InputSourceKind": "Keyboard Layout",
+         "KeyboardLayout ID": -18432, "KeyboardLayout Name": "Hebrew"},
+    ]
+
+    def _enabled(self):
+        return util.defaults_export(self.DOMAIN).get(self.KEY, [])
+
+    def _missing(self):
+        have = {e.get("KeyboardLayout Name") for e in self._enabled()
+                if isinstance(e, dict)}
+        return [lay for lay in self.LAYOUTS
+                if lay["KeyboardLayout Name"] not in have]
+
+    def checks(self):
+        missing = self._missing()
+        return [Check("keyboard layouts enabled", not missing,
+                      "ABC + Hebrew",
+                      "both enabled" if not missing else
+                      "missing: " + ", ".join(l["KeyboardLayout Name"] for l in missing))]
+
+    def apply(self):
+        missing = self._missing()
+        if not missing:
+            return []
+        util.defaults_write(self.DOMAIN, self.KEY, self._enabled() + missing)
+        return ["enabled keyboard layout(s): "
+                + ", ".join(l["KeyboardLayout Name"] for l in missing)
+                + " (log out/in to take effect)"]
 
 
 class Dock(Component):
