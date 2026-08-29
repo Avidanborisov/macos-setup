@@ -45,7 +45,7 @@ off, run `./macsetup doctor` — it reports exactly which setting drifted, and
 | `scroll` | UnnaturalScrollWheels: invert mouse wheel only, trackpad untouched |
 | `finder` | Explorer-like Finder: all extensions, path/status bar, folders first, list view, search current folder |
 | `swiftquit` | Swift Quit settings + running check |
-| `dockdoor` | DockDoor: click the active app's Dock icon to minimize, click again to restore (Windows taskbar); hover previews; its Alt+Tab stays off |
+| `dockdoor` | DockDoor: click the active app's Dock icon to stash it, click again to restore (Windows taskbar); compact hover previews; its Alt+Tab stays off |
 | `scripts` | Helper scripts in `~/.local/bin` (tmux launcher) |
 | `login` | Login items for all of the above |
 
@@ -234,4 +234,5 @@ start/end (single press, including in ssh/tmux), DEL forward-deletes.
 | Alt+<key> app shortcuts in unscoped apps | Physical Alt sends Control, apps expect Option | Rules exist for VS Code/Antigravity/browsers; add app-scoped rules as needed |
 | F11 on the built-in keyboard | No F11 on Touch Bar models | Fn+F11 or Ctrl+Cmd+F |
 | Finder Ctrl+X while renaming a file | Karabiner can't tell rename-edit mode from normal browsing, so Ctrl+X/V act on the file, not the selected text | Use Cmd+X/V equivalents via right-click, or finish the rename first |
+| Minimizing a **Finder** window with the yellow button leaves a tile next to the Trash | macOS special-cases Finder: it ignores "minimize into application icon" (verified — regular apps like TextEdit honor it, Finder never does) | Stash Finder by clicking its Dock icon (DockDoor hides it, no tile) or close with Ctrl+W; Alt+Tab lists hidden and minimized windows either way |
 | Logi Options+ | Manages the mouse independently; can fight UnnaturalScrollWheels | Keep its scroll direction on "Standard"; doctor warns otherwise |

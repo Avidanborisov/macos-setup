@@ -29,10 +29,11 @@ class AltTab(Component):
 
     DOMAIN = "com.lwouis.alt-tab-macos"
     spec = DefaultsSpec(DOMAIN, {
-        # Show minimized windows like the Windows Alt+Tab does — Win+Down can
-        # minimize, and Alt+Tab must be able to bring those windows back.
+        # Windows' Alt+Tab lists everything, including stashed windows: dock
+        # clicks hide apps and the yellow button minimizes them, so both must
+        # remain reachable here.
         "showMinimizedWindows": 1,
-        "showHiddenWindows": 0,
+        "showHiddenWindows": 1,
         "menubarIconShown": False,
         "arrowKeysEnabled": True,
     })
@@ -293,8 +294,15 @@ class DockDoor(Component):
 
     DOMAIN = "com.ethanbills.DockDoor"
     spec = DefaultsSpec(DOMAIN, {
-        "shouldHideOnDockItemClick": True,   # click frontmost app's icon -> minimize
-        "dockClickAction": "minimize",       # minimize (click again restores), not hide
+        "shouldHideOnDockItemClick": True,   # click frontmost app's icon -> hide
+        # "hide" rather than "minimize": macOS special-cases Finder so its
+        # minimized windows always spawn a separate Dock tile next to the Trash
+        # (verified: TextEdit minimizes into its icon, Finder never does).
+        # Hiding leaves no tiles for any app, is faster (one call, not per
+        # window), and matches the Windows taskbar: click to stash, click to
+        # bring back. AltTab is set to list hidden windows so they stay
+        # reachable from Alt+Tab.
+        "dockClickAction": "hide",
         "enableWindowSwitcher": False,       # AltTab owns Alt+Tab
         "showMenuBarIcon": False,
         "openDelay": 0.1,                    # snappier hover previews
