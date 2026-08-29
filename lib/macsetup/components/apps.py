@@ -28,12 +28,15 @@ class AltTab(Component):
     manual = ["Grant Accessibility to AltTab"]
 
     DOMAIN = "com.lwouis.alt-tab-macos"
+    # AltTab's ShowHowPreference enum — NOT a boolean, and easy to get
+    # backwards: 0 = show, 1 = hide, 2 = show at the end. Keys without a
+    # numeric suffix belong to shortcut index 0, which is our hold shortcut.
+    SHOW, HIDE, SHOW_AT_END = 0, 1, 2
     spec = DefaultsSpec(DOMAIN, {
-        # Windows' Alt+Tab lists everything, including stashed windows: dock
-        # clicks hide apps and the yellow button minimizes them, so both must
-        # remain reachable here.
-        "showMinimizedWindows": 1,
-        "showHiddenWindows": 1,
+        # Windows' Alt+Tab lists everything stashed — dock clicks minimize and
+        # Cmd+H hides — so both must stay reachable here.
+        "showMinimizedWindows": SHOW,
+        "showHiddenWindows": SHOW,
         "menubarIconShown": False,
         "arrowKeysEnabled": True,
     })
@@ -294,15 +297,15 @@ class DockDoor(Component):
 
     DOMAIN = "com.ethanbills.DockDoor"
     spec = DefaultsSpec(DOMAIN, {
-        "shouldHideOnDockItemClick": True,   # click frontmost app's icon -> hide
-        # "hide" rather than "minimize": macOS special-cases Finder so its
-        # minimized windows always spawn a separate Dock tile next to the Trash
-        # (verified: TextEdit minimizes into its icon, Finder never does).
-        # Hiding leaves no tiles for any app, is faster (one call, not per
-        # window), and matches the Windows taskbar: click to stash, click to
-        # bring back. AltTab is set to list hidden windows so they stay
-        # reachable from Alt+Tab.
-        "dockClickAction": "hide",
+        "shouldHideOnDockItemClick": True,   # click frontmost app's icon -> minimize
+        # "minimize" keeps the genie/scale animation (macOS hide has none at
+        # all). Cost: macOS special-cases Finder, so minimized *Finder* windows
+        # always leave a tile by the Trash — verified, no setting changes it.
+        "dockClickAction": "minimize",
+        "restoreAllMinimizedWindowsOnDockClick": True,
+        # React to window-state changes quickly (default 0.3 makes dock clicks
+        # feel laggy). DockDoor also has a hardcoded 0.15s click delay.
+        "windowProcessingDebounceInterval": 0.1,
         "enableWindowSwitcher": False,       # AltTab owns Alt+Tab
         "showMenuBarIcon": False,
         "openDelay": 0.1,                    # snappier hover previews

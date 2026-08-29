@@ -49,6 +49,9 @@ class SystemDefaults(Component):
             # Trackpad keeps natural scrolling; the mouse wheel is inverted
             # per-device by UnnaturalScrollWheels, NOT by this global toggle.
             "com.apple.swipescrolldirection": True,
+            # Snappier window zoom/resize animations (maximize, restore,
+            # Rectangle snapping). Kept non-zero so motion stays visible.
+            "NSWindowResizeTime": 0.05,
         }),
     ]
 
@@ -82,7 +85,9 @@ class Dock(Component):
         "show-recents": False,             # only pinned + running apps
         "minimize-to-application": True,   # minimized windows go into the app
                                            # icon, not separate tiles on the right
-        "mineffect": "scale",              # snappier minimize animation
+                                           # (macOS ignores this for Finder)
+        "mineffect": "scale",              # scale is much faster than genie
+        "launchanim": False,               # no bouncing icon on launch
     })
 
     def checks(self):

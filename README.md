@@ -39,7 +39,7 @@ off, run `./macsetup doctor` — it reports exactly which setting drifted, and
 | `ghostty` | Ghostty config, icon, and the `ghostty-tmux-launch` script |
 | `tmux` | `~/.tmux.conf` (oh-my-tmux) + `~/.tmux.conf.local` (prefix = C-a) |
 | `zshrc` | Managed block in `~/.zshrc`: Home/End keybindings, LC_TIME |
-| `alttab` | Hold Control (= physical Alt), arrow keys, hidden menu bar icon |
+| `alttab` | Hold Control (= physical Alt), arrow keys, hidden menu bar icon, lists minimized + hidden windows like Windows' Alt+Tab (note: AltTab's `showMinimizedWindows`/`showHiddenWindows` are an enum where **0 = show**, 1 = hide — not booleans) |
 | `maccy` | Clipboard history on Win+V (hotkey is Option+V set directly in Maccy — no Karabiner rule involved) |
 | `rectangle` | Window snapping shortcuts, written straight to defaults (no manual import needed) |
 | `scroll` | UnnaturalScrollWheels: invert mouse wheel only, trackpad untouched |
@@ -234,5 +234,5 @@ start/end (single press, including in ssh/tmux), DEL forward-deletes.
 | Alt+<key> app shortcuts in unscoped apps | Physical Alt sends Control, apps expect Option | Rules exist for VS Code/Antigravity/browsers; add app-scoped rules as needed |
 | F11 on the built-in keyboard | No F11 on Touch Bar models | Fn+F11 or Ctrl+Cmd+F |
 | Finder Ctrl+X while renaming a file | Karabiner can't tell rename-edit mode from normal browsing, so Ctrl+X/V act on the file, not the selected text | Use Cmd+X/V equivalents via right-click, or finish the rename first |
-| Minimizing a **Finder** window with the yellow button leaves a tile next to the Trash | macOS special-cases Finder: it ignores "minimize into application icon" (verified — regular apps like TextEdit honor it, Finder never does) | Stash Finder by clicking its Dock icon (DockDoor hides it, no tile) or close with Ctrl+W; Alt+Tab lists hidden and minimized windows either way |
+| Minimizing a **Finder** window leaves a tile next to the Trash | macOS special-cases Finder: it ignores "minimize into application icon" (verified — regular apps like TextEdit honor it, Finder never does). No setting changes this. | Close Finder windows with Ctrl+W when done; the tile disappears once the window is restored. Alt+Tab lists minimized windows, so they stay reachable. |
 | Logi Options+ | Manages the mouse independently; can fight UnnaturalScrollWheels | Keep its scroll direction on "Standard"; doctor warns otherwise |
