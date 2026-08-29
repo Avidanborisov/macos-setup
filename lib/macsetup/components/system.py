@@ -38,10 +38,9 @@ SYMBOLIC_HOTKEYS = {
 
 class SystemDefaults(Component):
     name = "system"
-    description = "Dock auto-hide, F-keys standard, English locale, trackpad stays natural"
+    description = "F-keys standard, English locale, trackpad stays natural"
 
     specs = [
-        DefaultsSpec("com.apple.dock", {"autohide": True}),
         DefaultsSpec("NSGlobalDomain", {
             "com.apple.keyboard.fnState": True,   # F-keys act as F-keys
             "AppleLanguages": ["en"],
@@ -61,11 +60,32 @@ class SystemDefaults(Component):
 
     def apply(self):
         actions = []
-        dock_before = util.defaults_export("com.apple.dock").get("autohide")
         for spec in self.specs:
             actions.extend(spec.apply())
-        if actions and not util.norm(dock_before):
-            util.kill_app("Dock")
+        return actions
+
+
+class Dock(Component):
+    name = "dock"
+    description = "Windows-taskbar-style Dock: pinned, small tiles, minimize into app icon"
+
+    spec = DefaultsSpec("com.apple.dock", {
+        "autohide": False,                 # pinned like the Windows taskbar
+        "tilesize": 44,                    # compact so pinning costs little space
+        "magnification": False,            # Windows doesn't zoom taskbar icons
+        "show-recents": False,             # only pinned + running apps
+        "minimize-to-application": True,   # minimized windows go into the app
+                                           # icon, not separate tiles on the right
+        "mineffect": "scale",              # snappier minimize animation
+    })
+
+    def checks(self):
+        return self.spec.checks()
+
+    def apply(self):
+        actions = self.spec.apply()
+        if actions:
+            util.kill_app("Dock")  # the Dock relaunches itself
             actions.append("restarted Dock")
         return actions
 

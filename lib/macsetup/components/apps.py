@@ -121,9 +121,6 @@ class Rectangle(Component):
 
     DOMAIN = "com.knollsoft.Rectangle"
     EXPORT = util.CONFIG / "rectangle" / "RectangleConfig.json"
-    # Win+Up/Win+Down (ctrl+opt+up/down) are owned by Hammerspoon, which has
-    # the stateful Windows semantics; Rectangle must not also react to them.
-    REMOVED_SHORTCUTS = ("maximize", "restore")
 
     def _desired(self):
         """Flatten RectangleConfig.json (an export) into defaults keys."""
@@ -142,8 +139,6 @@ class Rectangle(Component):
             else:
                 desired[key] = value
         for action, sc in cfg.get("shortcuts", {}).items():
-            if action in self.REMOVED_SHORTCUTS:
-                continue
             desired[action] = {"keyCode": sc["keyCode"],
                                "modifierFlags": sc["modifierFlags"]}
         return desired
@@ -157,10 +152,6 @@ class Rectangle(Component):
                      f"{len(desired)} keys from RectangleConfig.json",
                      "all match" if not bad else "drifted: " + ", ".join(sorted(bad)[:8])
                      + ("…" if len(bad) > 8 else ""))]
-        stale = [k for k in self.REMOVED_SHORTCUTS if k in live]
-        out.append(Check("maximize/restore unbound (Hammerspoon owns them)", not stale,
-                         "no maximize/restore shortcuts",
-                         "unbound" if not stale else "still bound: " + ", ".join(stale)))
         running = util.process_running("Rectangle")
         out.append(Check("Rectangle running", running, "running",
                          "running" if running else "not running"))
@@ -174,10 +165,6 @@ class Rectangle(Component):
             if util.norm(live.get(key)) != util.norm(value):
                 util.defaults_write(self.DOMAIN, key, value)
                 actions.append(f"set Rectangle {key}")
-        for key in self.REMOVED_SHORTCUTS:
-            if key in live:
-                util.run(["defaults", "delete", self.DOMAIN, key])
-                actions.append(f"unbound Rectangle {key}")
         if actions:
             _restart("Rectangle")
             actions.append("restarted Rectangle")
@@ -310,6 +297,8 @@ class DockDoor(Component):
         "dockClickAction": "minimize",       # minimize (click again restores), not hide
         "enableWindowSwitcher": False,       # AltTab owns Alt+Tab
         "showMenuBarIcon": False,
+        "openDelay": 0.1,                    # snappier hover previews
+        "fadeOutDuration": 0.1,              # previews disappear promptly
     })
 
     def checks(self):
@@ -378,8 +367,7 @@ class LoginItems(Component):
     # SMAppService and deletes any legacy login item on startup (which used to
     # look like mysterious drift). Its component checks that it's running.
     APPS = ["Karabiner-Elements", "Rectangle", "Maccy",
-            "UnnaturalScrollWheels", "Swift Quit", "Ghostty",
-            "Hammerspoon", "DockDoor"]
+            "UnnaturalScrollWheels", "Swift Quit", "Ghostty", "DockDoor"]
 
     def checks(self):
         current = util.login_items()

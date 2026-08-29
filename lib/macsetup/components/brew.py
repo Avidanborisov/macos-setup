@@ -15,7 +15,6 @@ CASKS_CORE = [
     "ghostty",              # terminal
     "unnaturalscrollwheels",  # reverse mouse wheel only (trackpad stays natural)
     "swift-quit",           # red X quits the app
-    "hammerspoon",          # Win+Up/Win+Down window semantics
     "dockdoor",             # Windows-style Dock: click-to-minimize, hover previews
 ]
 

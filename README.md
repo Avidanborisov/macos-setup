@@ -31,7 +31,8 @@ off, run `./macsetup doctor` — it reports exactly which setting drifted, and
 | Component | What it manages |
 |---|---|
 | `brew` | GUI apps (Karabiner-Elements, Rectangle, AltTab, Maccy, Ghostty, UnnaturalScrollWheels, Swift Quit) and CLI tools |
-| `system` | Dock auto-hide, F-keys as F-keys, English locale, trackpad stays natural |
+| `system` | F-keys as F-keys, English locale, trackpad stays natural |
+| `dock` | Windows-taskbar-style Dock: pinned (no auto-hide), compact tiles, no magnification, minimize into app icon, quick scale animation |
 | `hotkeys` | macOS symbolic hotkeys: Ctrl+Arrow Mission Control/Spaces shortcuts off (they'd steal AltTab's arrow navigation); Ctrl+Space input switching off (Karabiner switches language directly, and VS Code needs Ctrl+Space for autocomplete); Show Desktop rebound to F17 for Win+D |
 | `karabiner` | All key remapping (template in `config/karabiner/` + auto-generated per-device modifier swaps) |
 | `keybindings` | `DefaultKeyBinding.dict`: Page Up/Down move the cursor in Cocoa apps |
@@ -44,7 +45,6 @@ off, run `./macsetup doctor` — it reports exactly which setting drifted, and
 | `scroll` | UnnaturalScrollWheels: invert mouse wheel only, trackpad untouched |
 | `finder` | Explorer-like Finder: all extensions, path/status bar, folders first, list view, search current folder |
 | `swiftquit` | Swift Quit settings + running check |
-| `hammerspoon` | Hammerspoon config: instant, stateful Win+Up/Win+Down (maximize / restore / minimize / un-minimize) |
 | `dockdoor` | DockDoor: click the active app's Dock icon to minimize, click again to restore (Windows taskbar); hover previews; its Alt+Tab stays off |
 | `scripts` | Helper scripts in `~/.local/bin` (tmux launcher) |
 | `login` | Login items for all of the above |
@@ -81,8 +81,7 @@ keyboards that aren't currently connected are preserved.
 
 | Rule | What it does |
 |---|---|
-| Win+Left/Right/Up → Ctrl+Option+Arrow | Window snapping / maximize via Rectangle (distinguishes Win+Arrow from Ctrl+Arrow) |
-| Win+Down / Win+Up → Ctrl+Option+Down/Up | Handled by Hammerspoon (resident, instant): Down = leave fullscreen / restore maximized / minimize; Up = un-minimize the last Win+Down window / maximize (frame remembered for restore). Rectangle deliberately has no maximize/restore bindings. |
+| Win+Arrow → Ctrl+Option+Arrow | Window snapping via Rectangle: Left/Right halves, Up maximize, Down restore |
 | Win+Shift+Left/Right → Ctrl+Option+Cmd+Arrow | Move window to previous/next display (Rectangle) |
 | Terminal: Ctrl+Arrow → Esc b/f | Word-by-word navigation in Ghostty/Terminal.app |
 | Ctrl+Arrow → Option+Arrow | Word navigation everywhere else (Shift allowed for selection) |
@@ -193,9 +192,8 @@ Finish with `./macsetup doctor` and `./macsetup test -i`.
 | Ctrl+C/V/X/Z | Copy/Paste/Cut/Undo |
 | Ctrl+Left/Right (+Shift) | Move (select) by word |
 | Ctrl+Backspace | Delete previous word |
-| Win+Left/Right/Up | Snap left/right, maximize |
-| Win+Down | Un-maximize; minimize if already windowed |
-| Win+Up (after Win+Down) | Bring back the minimized window |
+| Win+Left/Right/Up | Snap left/right, maximize (F11 for fullscreen) |
+| Win+Down | Restore (un-maximize / un-snap) |
 | Click Dock icon of active app | Minimize; click again to restore |
 | Win+Shift+Left/Right | Move window to previous/next display |
 | Alt+Tab (+ arrows) | Window switcher |
