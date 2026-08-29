@@ -1,0 +1,38 @@
+#!/bin/sh
+
+set -eu
+
+log_dir="${XDG_STATE_HOME:-$HOME/.local/state}/shell-startup"
+log_file="$log_dir/ghostty-tmux.log"
+session_name="main"
+tmux_bin="/opt/homebrew/bin/tmux"
+
+mkdir -p "$log_dir"
+
+session_state="missing"
+if "$tmux_bin" has-session -t "$session_name" 2>/dev/null; then
+  session_state="existing"
+fi
+
+start_ms=$(python3 - <<'PY'
+import time
+print(int(time.time() * 1000))
+PY
+)
+
+"$tmux_bin" start-server >/dev/null 2>&1 || true
+
+end_ms=$(python3 - <<'PY'
+import time
+print(int(time.time() * 1000))
+PY
+)
+
+printf '%s start_server_ms=%s session=%s term_program=%s\n' \
+  "$(date '+%Y-%m-%dT%H:%M:%S%z')" \
+  "$((end_ms - start_ms))" \
+  "$session_state" \
+  "${TERM_PROGRAM:-unknown}" \
+  >> "$log_file"
+
+exec "$tmux_bin" new -A -s "$session_name"
