@@ -116,14 +116,19 @@ def backup_path(dest: Path) -> Path:
 
 def install_file(src: Path, dest: Path, mode=None) -> bool:
     """Copy src to dest (backing up an existing, different dest). Returns True if changed."""
+    return install_bytes(src.read_bytes(), dest, mode)
+
+
+def install_bytes(content: bytes, dest: Path, mode=None) -> bool:
+    """Write content to dest (backing up an existing, different dest). Returns True if changed."""
     dest.parent.mkdir(parents=True, exist_ok=True)
     if dest.exists():
-        if dest.read_bytes() == src.read_bytes():
+        if dest.read_bytes() == content:
             if mode is not None:
                 os.chmod(dest, mode)
             return False
         shutil.copy2(dest, backup_path(dest))
-    shutil.copy2(src, dest)
+    dest.write_bytes(content)
     if mode is not None:
         os.chmod(dest, mode)
     return True

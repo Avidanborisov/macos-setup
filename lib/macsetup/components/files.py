@@ -17,16 +17,26 @@ class CocoaKeybindings(FileComponent):
 
 class Ghostty(FileComponent):
     name = "ghostty"
-    description = "Ghostty terminal config, icon, and tmux launcher script"
+    description = "Ghostty terminal config and icon"
     pairs = [
         (util.CONFIG / "ghostty" / "config",
          util.HOME / ".config" / "ghostty" / "config", None),
         (util.CONFIG / "ghostty" / "icon_256x256@2x.png",
          util.HOME / ".config" / "ghostty" / "icon_256x256@2x.png", None),
+    ]
+    template_files = (util.CONFIG / "ghostty" / "config",)
+    restart_note = "note: restart Ghostty to pick up config changes"
+
+
+class Scripts(FileComponent):
+    name = "scripts"
+    description = "Helper scripts in ~/.local/bin (tmux launcher, Win+Down helper)"
+    pairs = [
         (util.CONFIG / "bin" / "ghostty-tmux-launch",
          util.HOME / ".local" / "bin" / "ghostty-tmux-launch", 0o755),
+        (util.CONFIG / "bin" / "macsetup-win-down",
+         util.HOME / ".local" / "bin" / "macsetup-win-down", 0o755),
     ]
-    restart_note = "note: restart Ghostty to pick up config changes"
 
 
 

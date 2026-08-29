@@ -56,14 +56,23 @@ class Component:
 class FileComponent(Component):
     """Config files copied from the repo to system locations.
 
-    pairs: list of (repo_relative_src, dest_path, mode_or_None)
+    pairs: list of (src_path, dest_path, mode_or_None).
+    Files listed in `template_files` have {{HOME}} rendered on install (and
+    reverse-substituted on adopt) so the repo stays free of machine paths.
     """
 
-    pairs = []  # list of (src_path, dest_path, mode_or_None)
+    pairs = []
+    template_files = ()
     restart_note = ""
 
     def _resolved(self):
         yield from self.pairs
+
+    def _rendered(self, src):
+        data = src.read_bytes()
+        if src in self.template_files:
+            data = data.replace(b"{{HOME}}", str(util.HOME).encode())
+        return data
 
     def checks(self):
         out = []
@@ -72,7 +81,7 @@ class FileComponent(Component):
                 out.append(Check(f"{dest}", False, "repo file exists", "missing from repo",
                                  note=f"expected at {src}"))
                 continue
-            ok = util.files_match(src, dest)
+            ok = dest.exists() and dest.read_bytes() == self._rendered(src)
             actual = "matches repo" if ok else ("missing" if not dest.exists() else "differs from repo")
             out.append(Check(str(dest).replace(str(util.HOME), "~"), ok,
                              "matches repo", actual))
@@ -83,7 +92,7 @@ class FileComponent(Component):
         for src, dest, mode in self._resolved():
             if not src.exists():
                 continue
-            if util.install_file(src, dest, mode):
+            if util.install_bytes(self._rendered(src), dest, mode):
                 actions.append(f"installed {dest}")
         if actions and self.restart_note:
             actions.append(self.restart_note)
@@ -95,9 +104,12 @@ class FileComponent(Component):
     def adopt(self):
         actions = []
         for src, dest, _mode in self._resolved():
-            if dest.exists() and not util.files_match(src, dest):
+            if dest.exists() and dest.read_bytes() != self._rendered(src):
                 src.parent.mkdir(parents=True, exist_ok=True)
-                src.write_bytes(dest.read_bytes())
+                data = dest.read_bytes()
+                if src in self.template_files:
+                    data = data.replace(str(util.HOME).encode(), b"{{HOME}}")
+                src.write_bytes(data)
                 actions.append(f"adopted {dest} -> {src.relative_to(util.REPO)}")
         return actions
 

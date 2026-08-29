@@ -15,13 +15,18 @@ def _hotkey(enabled, params):
 
 
 # AppleSymbolicHotKeys ids:
-#   60 = Select previous input source (Ctrl+Space) — enabled, used to switch language
+#   60 = Select previous input source (Ctrl+Space) — DISABLED: language is
+#        switched by Karabiner's select_input_source (Alt+Shift), and leaving
+#        it on would swallow the Ctrl+Space we send VS Code for autocomplete
+#   36 = Show Desktop — rebound from F11 to F17 (keycode 64) and used by the
+#        Win+D rule; on F11 it would fire from external-keyboard media keys
 #   32/33 = Mission Control / App Expose (Ctrl+Up/Down) — disabled so the held
 #           AltTab modifier (Control = physical Alt) + arrows reaches AltTab
 #   79/80 = move left/right a Space (Ctrl+Left/Right) — disabled, same reason
 #   81/82 = same with Shift — disabled
 SYMBOLIC_HOTKEYS = {
-    "60": _hotkey(True, [32, 49, 262144]),
+    "60": _hotkey(False, [32, 49, 262144]),
+    "36": _hotkey(True, [65535, 64, 0]),
     "32": _hotkey(False, [65535, 126, 262144]),
     "33": _hotkey(False, [65535, 125, 262144]),
     "79": _hotkey(False, [65535, 123, 262144]),
@@ -69,27 +74,43 @@ class SymbolicHotkeys(Component):
     name = "hotkeys"
     description = "System keyboard shortcuts (input-source switch on, Ctrl+Arrow shortcuts off)"
 
+    NAMES = {"60": "input-source switch (Ctrl+Space)",
+             "36": "Show Desktop (F17, used by Win+D)",
+             "32": "Mission Control (Ctrl+Up)",
+             "33": "App Expose (Ctrl+Down)",
+             "79": "Spaces left (Ctrl+Left)",
+             "80": "Spaces right (Ctrl+Right)",
+             "81": "Spaces left +Shift",
+             "82": "Spaces right +Shift"}
+
+    @staticmethod
+    def _matches(have, want):
+        if not isinstance(have, dict):
+            # A missing entry means the macOS default applies; treat as drift.
+            return False
+        if util.norm(have.get("enabled")) != util.norm(want["enabled"]):
+            return False
+        if util.norm(want["enabled"]):
+            # For enabled hotkeys the key binding itself must match too.
+            params = (have.get("value") or {}).get("parameters")
+            return util.norm(params) == util.norm(want["value"]["parameters"])
+        return True
+
     def checks(self):
         live = util.defaults_export("com.apple.symbolichotkeys").get("AppleSymbolicHotKeys", {})
         out = []
-        names = {"60": "input-source switch (Ctrl+Space)",
-                 "32": "Mission Control (Ctrl+Up)",
-                 "33": "App Expose (Ctrl+Down)",
-                 "79": "Spaces left (Ctrl+Left)",
-                 "80": "Spaces right (Ctrl+Right)",
-                 "81": "Spaces left +Shift",
-                 "82": "Spaces right +Shift"}
         for key, want in SYMBOLIC_HOTKEYS.items():
             have = live.get(key)
-            want_enabled = util.norm(want["enabled"])
-            # A missing entry means the macOS default applies; for the ones we
-            # disable the default is enabled, so missing == drift.
-            have_enabled = util.norm(have.get("enabled")) if isinstance(have, dict) else None
-            ok = have_enabled == want_enabled
-            out.append(Check(f"hotkey {key} ({names[key]})", ok,
-                             "enabled" if want_enabled else "disabled",
-                             {1: "enabled", 0: "disabled", None: "not set (macOS default)"}
-                             .get(have_enabled, repr(have_enabled))))
+            ok = self._matches(have, want)
+            want_desc = ("enabled " + repr(want["value"]["parameters"])
+                         if util.norm(want["enabled"]) else "disabled")
+            if not isinstance(have, dict):
+                have_desc = "not set (macOS default)"
+            elif util.norm(have.get("enabled")):
+                have_desc = "enabled " + repr(util.norm((have.get("value") or {}).get("parameters")))
+            else:
+                have_desc = "disabled"
+            out.append(Check(f"hotkey {key} ({self.NAMES[key]})", ok, want_desc, have_desc))
         return out
 
     def apply(self):
@@ -97,9 +118,7 @@ class SymbolicHotkeys(Component):
         live = util.defaults_export("com.apple.symbolichotkeys").get("AppleSymbolicHotKeys", {})
         changed = False
         for key, want in SYMBOLIC_HOTKEYS.items():
-            have = live.get(key)
-            have_enabled = util.norm(have.get("enabled")) if isinstance(have, dict) else None
-            if have_enabled != util.norm(want["enabled"]):
+            if not self._matches(live.get(key), want):
                 util.run(["defaults", "write", "com.apple.symbolichotkeys",
                           "AppleSymbolicHotKeys", "-dict-add", key,
                           _plist_fragment(want)], check=True)

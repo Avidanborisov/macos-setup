@@ -3,8 +3,8 @@
 from .brew import Brew
 from .system import SystemDefaults, SymbolicHotkeys, ZshrcBlock
 from .karabiner import Karabiner
-from .files import CocoaKeybindings, Ghostty, Tmux
-from .apps import AltTab, Maccy, Rectangle, ScrollWheels, LoginItems
+from .files import CocoaKeybindings, Ghostty, Scripts, Tmux
+from .apps import AltTab, Finder, LoginItems, Maccy, Rectangle, ScrollWheels, SwiftQuit
 
 ALL = [
     Brew(),
@@ -13,11 +13,14 @@ ALL = [
     Karabiner(),
     CocoaKeybindings(),
     Ghostty(),
+    Scripts(),
     Tmux(),
     ZshrcBlock(),
     AltTab(),
     Maccy(),
     Rectangle(),
     ScrollWheels(),
+    Finder(),
+    SwiftQuit(),
     LoginItems(),
 ]

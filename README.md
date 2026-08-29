@@ -32,7 +32,7 @@ off, run `./macsetup doctor` — it reports exactly which setting drifted, and
 |---|---|
 | `brew` | GUI apps (Karabiner-Elements, Rectangle, AltTab, Maccy, Ghostty, UnnaturalScrollWheels, Swift Quit) and CLI tools |
 | `system` | Dock auto-hide, F-keys as F-keys, English locale, trackpad stays natural |
-| `hotkeys` | macOS symbolic hotkeys: Ctrl+Space input switching on; Ctrl+Arrow Mission Control/Spaces shortcuts off (they'd steal AltTab's arrow navigation) |
+| `hotkeys` | macOS symbolic hotkeys: Ctrl+Arrow Mission Control/Spaces shortcuts off (they'd steal AltTab's arrow navigation); Ctrl+Space input switching off (Karabiner switches language directly, and VS Code needs Ctrl+Space for autocomplete); Show Desktop rebound to F17 for Win+D |
 | `karabiner` | All key remapping (template in `config/karabiner/` + auto-generated per-device modifier swaps) |
 | `keybindings` | `DefaultKeyBinding.dict`: Page Up/Down move the cursor in Cocoa apps |
 | `ghostty` | Ghostty config, icon, and the `ghostty-tmux-launch` script |
@@ -42,6 +42,9 @@ off, run `./macsetup doctor` — it reports exactly which setting drifted, and
 | `maccy` | Clipboard history on Win+V (hotkey is Option+V set directly in Maccy — no Karabiner rule involved) |
 | `rectangle` | Window snapping shortcuts, written straight to defaults (no manual import needed) |
 | `scroll` | UnnaturalScrollWheels: invert mouse wheel only, trackpad untouched |
+| `finder` | Explorer-like Finder: all extensions, path/status bar, folders first, list view, search current folder |
+| `swiftquit` | Swift Quit settings + running check |
+| `scripts` | Helper scripts in `~/.local/bin` (tmux launcher, Win+Down helper) |
 | `login` | Login items for all of the above |
 
 File-based components (`keybindings`, `ghostty`, `tmux`) support
@@ -76,7 +79,8 @@ keyboards that aren't currently connected are preserved.
 
 | Rule | What it does |
 |---|---|
-| Win+Arrow → Ctrl+Option+Arrow | Window snapping via Rectangle (distinguishes Win+Arrow from Ctrl+Arrow) |
+| Win+Left/Right/Up → Ctrl+Option+Arrow | Window snapping / maximize via Rectangle (distinguishes Win+Arrow from Ctrl+Arrow) |
+| Win+Down → `macsetup-win-down` script | Windows semantics: leave fullscreen, else restore a Rectangle-maximized window, else minimize |
 | Win+Shift+Left/Right → Ctrl+Option+Cmd+Arrow | Move window to previous/next display (Rectangle) |
 | Terminal: Ctrl+Arrow → Esc b/f | Word-by-word navigation in Ghostty/Terminal.app |
 | Ctrl+Arrow → Option+Arrow | Word navigation everywhere else (Shift allowed for selection) |
@@ -85,9 +89,10 @@ keyboards that aren't currently connected are preserved.
 | Media keys → F1–F12 | External keyboard media keys become function keys |
 | Alt+F4 → Cmd+Q, Ctrl+F4 → Cmd+W | Quit app / close tab or window |
 | F11 → Cmd+Ctrl+F | Fullscreen toggle |
-| Win+D | Show desktop (hide all apps) |
+| Win+D → F17 | Toggles macOS Show Desktop (hotkey rebound to F17; press again to bring windows back) |
 | Win+E | Open home folder in Finder |
 | Win+Tab | Mission Control (Task View) |
+| Finder: F2 / Del / Ctrl+X,V / Alt+Up | Rename / move to Trash / cut-paste files / parent folder |
 | Ctrl+Space | Autocomplete in VS Code / Antigravity, blocked elsewhere; Alt+Space → Cmd+Space opens Spotlight |
 | Alt+Shift (tap) | Toggle input source ABC ↔ Hebrew (`select_input_source`, 2s tap window) |
 | Ctrl+Backspace → Option+Backspace | Delete previous word |
@@ -99,17 +104,19 @@ keyboards that aren't currently connected are preserved.
 | Ctrl+Tab / Ctrl+Shift+Tab | Next/previous tab |
 | Alt+F3 → Option+F3 | Select All Occurrences in VS Code / Antigravity |
 | AltTab tracking variable | Sets `alttab_open` while physical Alt+Tab is held, so the Alt+Arrow rules below never steal AltTab's arrow navigation |
-| Alt+Left/Right → Cmd+[ / Cmd+] | Back/forward in Chrome, Safari, Firefox |
+| Alt+Left/Right → Cmd+[ / Cmd+] | Back/forward in Chrome, Safari, Firefox, Finder |
 | Alt+Up/Down → Option+Up/Down | Move line up/down in VS Code / Antigravity (Shift allowed = copy line) |
 
 Ordering constraints encoded in the template:
 
 - Terminal-scoped rules come **before** their generic counterparts (Karabiner
-  is first-match).
-- Media-keys → F11 comes before F11 → fullscreen.
+  is first-match). Note manipulator output is *not* re-processed by later
+  rules — each physical key event matches at most one manipulator.
 - The AltTab tracking rule (which matches a bare Control press) comes **after**
   the Alt+Shift input-source rule, or it would swallow the Control press that
   rule needs.
+- Finder cut/paste works via a `finder_cut` variable: Ctrl+X copies and arms
+  it, Ctrl+V then pastes-as-move (Cmd+Option+V); plain Ctrl+C disarms it.
 
 ### Home/End and the tmux C-a prefix
 
@@ -184,7 +191,8 @@ Finish with `./macsetup doctor` and `./macsetup test -i`.
 | Ctrl+C/V/X/Z | Copy/Paste/Cut/Undo |
 | Ctrl+Left/Right (+Shift) | Move (select) by word |
 | Ctrl+Backspace | Delete previous word |
-| Win+Left/Right/Up/Down | Snap left/right, maximize, restore |
+| Win+Left/Right/Up | Snap left/right, maximize |
+| Win+Down | Un-maximize; minimize if already windowed |
 | Win+Shift+Left/Right | Move window to previous/next display |
 | Alt+Tab (+ arrows) | Window switcher |
 | Alt+F4 / Ctrl+F4 | Quit app / close tab |
@@ -194,7 +202,8 @@ Finish with `./macsetup doctor` and `./macsetup test -i`.
 | Ctrl+Tab / Ctrl+Shift+Tab | Next/previous tab |
 | Alt+Left/Right | Back/forward (browsers) |
 | Alt+Up/Down | Move line (VS Code / Antigravity) |
-| Win+D | Show desktop |
+| Win+D | Show desktop (toggle) |
+| F2 / Del / Ctrl+X,V / Alt+Up/Left/Right | In Finder: rename / delete / cut-paste / navigate |
 | Alt+Space | Spotlight |
 | Alt+Shift (tap) | Switch language (ABC ↔ Hebrew) |
 | Win+V | Clipboard history (Maccy) |
@@ -220,4 +229,5 @@ start/end (single press, including in ssh/tmux), DEL forward-deletes.
 | Ctrl+scroll zoom in browsers | Karabiner can't intercept scroll events | Ctrl+= / Ctrl+- page zoom |
 | Alt+<key> app shortcuts in unscoped apps | Physical Alt sends Control, apps expect Option | Rules exist for VS Code/Antigravity/browsers; add app-scoped rules as needed |
 | F11 on the built-in keyboard | No F11 on Touch Bar models | Fn+F11 or Ctrl+Cmd+F |
+| Finder Ctrl+X while renaming a file | Karabiner can't tell rename-edit mode from normal browsing, so Ctrl+X/V act on the file, not the selected text | Use Cmd+X/V equivalents via right-click, or finish the rename first |
 | Logi Options+ | Manages the mouse independently; can fight UnnaturalScrollWheels | Keep its scroll direction on "Standard"; doctor warns otherwise |
