@@ -296,36 +296,44 @@ class DockDoor(Component):
     manual = ["Grant Accessibility and Screen Recording to DockDoor"]
 
     DOMAIN = "com.ethanbills.DockDoor"
-    spec = DefaultsSpec(DOMAIN, {
-        "shouldHideOnDockItemClick": True,   # click frontmost app's icon -> minimize
-        # "minimize" keeps the genie/scale animation (macOS hide has none at
-        # all). Cost: macOS special-cases Finder, so minimized *Finder* windows
-        # always leave a tile by the Trash — verified, no setting changes it.
-        "dockClickAction": "minimize",
-        "restoreAllMinimizedWindowsOnDockClick": True,
-        # React to window-state changes quickly (default 0.3 makes dock clicks
-        # feel laggy). DockDoor also has a hardcoded 0.15s click delay.
-        "windowProcessingDebounceInterval": 0.1,
-        "enableWindowSwitcher": False,       # AltTab owns Alt+Tab
-        "showMenuBarIcon": False,
-        "openDelay": 0.1,                    # snappier hover previews
-        "fadeOutDuration": 0.05,             # previews vanish with the dock…
-        "inactivityTimeout": 0.1,            # …and don't linger after mouse leaves
-        # Compact thumbnails (default 300x187.5 is huge); keeps the 16:10 ratio
-        "previewWidth": 190.0,
-        "previewHeight": 118.75,
-        "trafficLightButtonScale": 0.7,      # smaller close/min buttons on previews
-    })
+    # Settings are kept as a JSON snapshot so they can be tuned in DockDoor's
+    # own UI and pulled back with `macsetup adopt dockdoor`.
+    SETTINGS = util.CONFIG / "dockdoor" / "settings.json"
+    # Runtime state, not preferences — never tracked.
+    VOLATILE_PREFIXES = ("SU", "NSWindow Frame", "NSStatusItem")
+    VOLATILE = {"launched", "lastKnownScreenRecordingPermission",
+                "persistedWindowOrder", "reopenSettingsAfterRestart", "migrations"}
+
+    def _desired(self):
+        return json.loads(self.SETTINGS.read_text())
+
+    def _tracked_live(self):
+        live = util.defaults_export(self.DOMAIN)
+        return {k: v for k, v in live.items()
+                if k not in self.VOLATILE
+                and not k.startswith(self.VOLATILE_PREFIXES)}
 
     def checks(self):
-        out = self.spec.checks()
+        live = util.defaults_export(self.DOMAIN)
+        desired = self._desired()
+        bad = [k for k, v in desired.items()
+               if util.norm(live.get(k)) != util.norm(v)]
+        out = [Check("DockDoor settings", not bad,
+                     f"{len(desired)} keys from config/dockdoor/settings.json",
+                     "all match" if not bad else "drifted: " + ", ".join(sorted(bad)[:6])
+                     + ("…" if len(bad) > 6 else ""))]
         running = util.process_running("DockDoor")
         out.append(Check("DockDoor running", running, "running",
                          "running" if running else "not running"))
         return out
 
     def apply(self):
-        actions = self.spec.apply()
+        live = util.defaults_export(self.DOMAIN)
+        actions = []
+        for key, value in self._desired().items():
+            if util.norm(live.get(key)) != util.norm(value):
+                util.defaults_write(self.DOMAIN, key, value)
+                actions.append(f"set DockDoor {key}")
         if actions:
             _restart("DockDoor")
             actions.append("restarted DockDoor")
@@ -333,6 +341,27 @@ class DockDoor(Component):
             util.open_app("DockDoor")
             actions.append("started DockDoor")
         return actions
+
+    def adoptable(self):
+        return True
+
+    def adopt(self):
+        live = self._tracked_live()
+        if util.norm(live) == util.norm(self._desired()):
+            return []
+
+        def clean(v):
+            if isinstance(v, float):
+                return round(v, 5)   # float32 storage noise
+            if isinstance(v, list):
+                return [clean(x) for x in v]
+            return v
+
+        snapshot = {k: clean(v) for k, v in sorted(live.items())}
+        self.SETTINGS.parent.mkdir(parents=True, exist_ok=True)
+        self.SETTINGS.write_text(json.dumps(snapshot, indent=2) + "\n")
+        return [f"adopted live DockDoor settings -> "
+                f"{self.SETTINGS.relative_to(util.REPO)}"]
 
 
 # ---------------------------------------------------------------------------

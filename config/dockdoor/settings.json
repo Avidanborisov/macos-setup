@@ -1,0 +1,29 @@
+{
+  "disableDockStyleTrafficLights": false,
+  "disableImagePreview": false,
+  "dockBackgroundStyle": "liquidGlass",
+  "dockClickAction": "minimize",
+  "dockPreviewControlPosition": "topTrailing",
+  "enableWindowSwitcher": false,
+  "enabledTrafficLightButtons": [
+    "close",
+    "toggleFullScreen",
+    "minimize"
+  ],
+  "fadeOutDuration": 0.05,
+  "inactivityTimeout": 0.1,
+  "openDelay": 0.1,
+  "previewHeight": 118.75,
+  "previewWidth": 190.0,
+  "restoreAllMinimizedWindowsOnDockClick": true,
+  "shouldHideOnDockItemClick": true,
+  "showAnimations": true,
+  "showAppName": true,
+  "showMassActionButtons": false,
+  "showMenuBarIcon": true,
+  "showWindowTitle": false,
+  "trafficLightButtonScale": 0.75,
+  "trafficLightButtonsVisibility": "dimmedOnPreviewHover",
+  "useEmbeddedDockPreviewElements": true,
+  "windowProcessingDebounceInterval": 0.1
+}

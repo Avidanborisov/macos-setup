@@ -45,13 +45,14 @@ off, run `./macsetup doctor` — it reports exactly which setting drifted, and
 | `scroll` | UnnaturalScrollWheels: invert mouse wheel only, trackpad untouched |
 | `finder` | Explorer-like Finder: all extensions, path/status bar, folders first, list view, search current folder |
 | `swiftquit` | Swift Quit settings + running check |
-| `dockdoor` | DockDoor: click the active app's Dock icon to stash it, click again to restore (Windows taskbar); compact hover previews; its Alt+Tab stays off |
+| `dockdoor` | DockDoor: click the active app's Dock icon to minimize, click again to restore (Windows taskbar); hover previews with controls embedded in the preview frame. Settings live in `config/dockdoor/settings.json` — tune them in DockDoor's UI, then `./macsetup adopt dockdoor` |
 | `scripts` | Helper scripts in `~/.local/bin` (tmux launcher) |
 | `login` | Login items for all of the above |
 
-File-based components (`keybindings`, `ghostty`, `tmux`) support
-`./macsetup adopt` — if you tweak the live file and like the result, adopt
-copies it back into the repo so the repo stays the source of truth.
+`./macsetup adopt` pulls live state back into the repo — for the file-based
+components (`keybindings`, `ghostty`, `tmux`, `scripts`) and for `dockdoor`,
+whose settings are snapshotted as JSON. Tweak things in the app's own UI, run
+adopt, and the repo stays the source of truth.
 
 ---
 
