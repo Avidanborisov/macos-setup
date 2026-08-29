@@ -4,8 +4,8 @@ from .brew import Brew
 from .system import Dock, InputSources, SystemDefaults, SymbolicHotkeys, ZshrcBlock
 from .karabiner import Karabiner
 from .files import CocoaKeybindings, Ghostty, Scripts, Tmux
-from .apps import (AltTab, DockDoor, Finder, LoginItems, Maccy, Rectangle,
-                   ScrollWheels, SwiftQuit)
+from .apps import (AltTab, ChromeRtl, DockDoor, Finder, LoginItems, Maccy,
+                   Rectangle, ScrollWheels, SwiftQuit)
 
 ALL = [
     Brew(),
@@ -25,6 +25,7 @@ ALL = [
     ScrollWheels(),
     Finder(),
     DockDoor(),
+    ChromeRtl(),
     SwiftQuit(),
     LoginItems(),
 ]
