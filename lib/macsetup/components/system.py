@@ -77,7 +77,7 @@ class Dock(Component):
         "autohide": True,
         "autohide-delay": 0.15,            # slight pause before revealing (avoids twitchy pops)
         "autohide-time-modifier": 0.4,     # quick but visible slide animation
-        "tilesize": 44,                    # compact
+        # tilesize is deliberately unmanaged — resize the Dock by hand to taste
         "magnification": False,            # Windows doesn't zoom taskbar icons
         "show-recents": False,             # only pinned + running apps
         "minimize-to-application": True,   # minimized windows go into the app
