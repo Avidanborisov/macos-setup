@@ -300,6 +300,10 @@ class DockDoor(Component):
         "openDelay": 0.1,                    # snappier hover previews
         "fadeOutDuration": 0.05,             # previews vanish with the dock…
         "inactivityTimeout": 0.1,            # …and don't linger after mouse leaves
+        # Compact thumbnails (default 300x187.5 is huge); keeps the 16:10 ratio
+        "previewWidth": 190.0,
+        "previewHeight": 118.75,
+        "trafficLightButtonScale": 0.7,      # smaller close/min buttons on previews
     })
 
     def checks(self):
