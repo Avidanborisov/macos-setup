@@ -99,7 +99,7 @@ keyboards that aren't currently connected are preserved.
 | Finder: F2 / Del / Ctrl+X,V / Alt+Up | Rename / move to Trash / cut-paste files / parent folder |
 | Ctrl+Space | Autocomplete in VS Code / Antigravity, blocked elsewhere; Alt+Space → Cmd+Space opens Spotlight |
 | Alt+Shift (tap) | Toggle input source ABC ↔ Hebrew (`select_input_source`, 2s tap window) |
-| Ctrl+LeftShift / Ctrl+RightShift (tap) | Paragraph direction LTR / RTL (right-aligned for Hebrew), like Windows. Sends Cmd+Opt+Ctrl+L/R, which `NSUserKeyEquivalents` binds to the "Left to Right"/"Right to Left" Writing Direction menu items (Cocoa apps: TextEdit, Notes, Mail, Pages…) |
+| Ctrl+LeftShift / Ctrl+RightShift (tap) | Paragraph direction LTR / RTL (right-aligned for Hebrew), like Windows. Cocoa apps (TextEdit, Notes, Mail, Pages…): sends Cmd+Opt+Ctrl+L/R, which `NSUserKeyEquivalents` binds to the Writing Direction menu items. Chrome: sends F18/F19, handled by the bundled `config/chrome/rtl-toggle` extension, which sets the focused field's base direction (same effect as right-click → Writing Direction; works in textareas and rich editors like Gmail). One-time setup: chrome://extensions → Developer mode → Load unpacked → select `config/chrome/rtl-toggle` |
 | Ctrl+Backspace → Option+Backspace | Delete previous word |
 | Terminal: DEL → forward delete | Forward delete works in terminals |
 | Cmd+Shift+Esc | Activity Monitor (Task Manager) |
