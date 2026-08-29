@@ -298,7 +298,8 @@ class DockDoor(Component):
         "enableWindowSwitcher": False,       # AltTab owns Alt+Tab
         "showMenuBarIcon": False,
         "openDelay": 0.1,                    # snappier hover previews
-        "fadeOutDuration": 0.1,              # previews disappear promptly
+        "fadeOutDuration": 0.05,             # previews vanish with the dock…
+        "inactivityTimeout": 0.1,            # …and don't linger after mouse leaves
     })
 
     def checks(self):

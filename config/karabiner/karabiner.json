@@ -283,6 +283,15 @@
                         ]
                     },
                     {
+                        "description": "PrintScreen takes screenshots (region to clipboard; Win+PrintScreen = full screen to file)",
+                        "manipulators": [
+                            { "type": "basic", "from": { "key_code": "print_screen", "modifiers": { "mandatory": ["option"], "optional": [] } }, "to": [{ "key_code": "3", "modifiers": ["left_command", "left_shift"] }] },
+                            { "type": "basic", "from": { "key_code": "f13", "modifiers": { "mandatory": ["option"], "optional": [] } }, "to": [{ "key_code": "3", "modifiers": ["left_command", "left_shift"] }] },
+                            { "type": "basic", "from": { "key_code": "print_screen", "modifiers": { "optional": [] } }, "to": [{ "key_code": "4", "modifiers": ["left_command", "left_control", "left_shift"] }] },
+                            { "type": "basic", "from": { "key_code": "f13", "modifiers": { "optional": [] } }, "to": [{ "key_code": "4", "modifiers": ["left_command", "left_control", "left_shift"] }] }
+                        ]
+                    },
+                    {
                         "description": "Win+E opens Finder (home folder)",
                         "manipulators": [
                             { "type": "basic", "from": { "key_code": "e", "modifiers": { "mandatory": ["option"], "optional": [] } }, "to": [{ "shell_command": "open ~" }] }
