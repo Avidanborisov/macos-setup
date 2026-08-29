@@ -67,11 +67,17 @@ class SystemDefaults(Component):
 
 class Dock(Component):
     name = "dock"
-    description = "Windows-taskbar-style Dock: pinned, small tiles, minimize into app icon"
+    description = "Windows-taskbar-style Dock: instant reveal on any display, minimize into app icon"
 
+    # A pinned Dock only exists on ONE display (macOS limitation — it migrates
+    # when summoned at another screen's bottom edge, i.e. "disappears").
+    # Auto-hide is the only native way to have it usable on every display, so
+    # make the reveal instant instead of the sluggish default.
     spec = DefaultsSpec("com.apple.dock", {
-        "autohide": False,                 # pinned like the Windows taskbar
-        "tilesize": 44,                    # compact so pinning costs little space
+        "autohide": True,
+        "autohide-delay": 0.0,             # appear the moment the cursor hits bottom
+        "autohide-time-modifier": 0.15,    # near-instant slide animation
+        "tilesize": 44,                    # compact
         "magnification": False,            # Windows doesn't zoom taskbar icons
         "show-recents": False,             # only pinned + running apps
         "minimize-to-application": True,   # minimized windows go into the app

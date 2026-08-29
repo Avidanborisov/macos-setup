@@ -32,7 +32,7 @@ off, run `./macsetup doctor` — it reports exactly which setting drifted, and
 |---|---|
 | `brew` | GUI apps (Karabiner-Elements, Rectangle, AltTab, Maccy, Ghostty, UnnaturalScrollWheels, Swift Quit) and CLI tools |
 | `system` | F-keys as F-keys, English locale, trackpad stays natural |
-| `dock` | Windows-taskbar-style Dock: pinned (no auto-hide), compact tiles, no magnification, minimize into app icon, quick scale animation |
+| `dock` | Windows-taskbar-style Dock: instant reveal at the bottom of *any* display (a pinned Dock only exists on one screen — macOS limitation), compact tiles, no magnification, minimize into app icon |
 | `hotkeys` | macOS symbolic hotkeys: Ctrl+Arrow Mission Control/Spaces shortcuts off (they'd steal AltTab's arrow navigation); Ctrl+Space input switching off (Karabiner switches language directly, and VS Code needs Ctrl+Space for autocomplete); Show Desktop rebound to F17 for Win+D |
 | `karabiner` | All key remapping (template in `config/karabiner/` + auto-generated per-device modifier swaps) |
 | `keybindings` | `DefaultKeyBinding.dict`: Page Up/Down move the cursor in Cocoa apps |
