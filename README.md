@@ -44,7 +44,9 @@ off, run `./macsetup doctor` — it reports exactly which setting drifted, and
 | `scroll` | UnnaturalScrollWheels: invert mouse wheel only, trackpad untouched |
 | `finder` | Explorer-like Finder: all extensions, path/status bar, folders first, list view, search current folder |
 | `swiftquit` | Swift Quit settings + running check |
-| `scripts` | Helper scripts in `~/.local/bin` (tmux launcher, Win+Down helper) |
+| `hammerspoon` | Hammerspoon config: instant, stateful Win+Up/Win+Down (maximize / restore / minimize / un-minimize) |
+| `dockdoor` | DockDoor: click the active app's Dock icon to minimize, click again to restore (Windows taskbar); hover previews; its Alt+Tab stays off |
+| `scripts` | Helper scripts in `~/.local/bin` (tmux launcher) |
 | `login` | Login items for all of the above |
 
 File-based components (`keybindings`, `ghostty`, `tmux`) support
@@ -80,7 +82,7 @@ keyboards that aren't currently connected are preserved.
 | Rule | What it does |
 |---|---|
 | Win+Left/Right/Up → Ctrl+Option+Arrow | Window snapping / maximize via Rectangle (distinguishes Win+Arrow from Ctrl+Arrow) |
-| Win+Down → `macsetup-win-down` script | Windows semantics: leave fullscreen, else restore a Rectangle-maximized window, else minimize |
+| Win+Down / Win+Up → Ctrl+Option+Down/Up | Handled by Hammerspoon (resident, instant): Down = leave fullscreen / restore maximized / minimize; Up = un-minimize the last Win+Down window / maximize (frame remembered for restore). Rectangle deliberately has no maximize/restore bindings. |
 | Win+Shift+Left/Right → Ctrl+Option+Cmd+Arrow | Move window to previous/next display (Rectangle) |
 | Terminal: Ctrl+Arrow → Esc b/f | Word-by-word navigation in Ghostty/Terminal.app |
 | Ctrl+Arrow → Option+Arrow | Word navigation everywhere else (Shift allowed for selection) |
@@ -193,6 +195,8 @@ Finish with `./macsetup doctor` and `./macsetup test -i`.
 | Ctrl+Backspace | Delete previous word |
 | Win+Left/Right/Up | Snap left/right, maximize |
 | Win+Down | Un-maximize; minimize if already windowed |
+| Win+Up (after Win+Down) | Bring back the minimized window |
+| Click Dock icon of active app | Minimize; click again to restore |
 | Win+Shift+Left/Right | Move window to previous/next display |
 | Alt+Tab (+ arrows) | Window switcher |
 | Alt+F4 / Ctrl+F4 | Quit app / close tab |

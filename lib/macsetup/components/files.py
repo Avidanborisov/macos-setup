@@ -1,6 +1,6 @@
 """Config files copied from the repo into place (with adopt for reverse sync)."""
 
-from ..framework import FileComponent
+from ..framework import Check, DefaultsSpec, FileComponent
 from .. import util
 
 
@@ -30,13 +30,44 @@ class Ghostty(FileComponent):
 
 class Scripts(FileComponent):
     name = "scripts"
-    description = "Helper scripts in ~/.local/bin (tmux launcher, Win+Down helper)"
+    description = "Helper scripts in ~/.local/bin (tmux launcher)"
     pairs = [
         (util.CONFIG / "bin" / "ghostty-tmux-launch",
          util.HOME / ".local" / "bin" / "ghostty-tmux-launch", 0o755),
-        (util.CONFIG / "bin" / "macsetup-win-down",
-         util.HOME / ".local" / "bin" / "macsetup-win-down", 0o755),
     ]
+
+
+class Hammerspoon(FileComponent):
+    name = "hammerspoon"
+    description = "Hammerspoon: instant Win+Up/Win+Down semantics (maximize/restore/minimize)"
+    manual = ["Grant Accessibility to Hammerspoon"]
+    pairs = [
+        (util.CONFIG / "hammerspoon" / "init.lua",
+         util.HOME / ".hammerspoon" / "init.lua", None),
+    ]
+    spec = DefaultsSpec("org.hammerspoon.Hammerspoon", {
+        "MJShowMenuIconKey": False,
+        "MJShowDockIconKey": False,
+    })
+
+    def checks(self):
+        out = super().checks()
+        out.extend(self.spec.checks())
+        running = util.process_running("Hammerspoon")
+        out.append(Check("Hammerspoon running", running, "running",
+                         "running" if running else "not running"))
+        return out
+
+    def apply(self):
+        actions = super().apply()
+        actions.extend(self.spec.apply())
+        if actions or not util.process_running("Hammerspoon"):
+            util.kill_app("Hammerspoon")
+            import time
+            time.sleep(1)
+            util.open_app("Hammerspoon")
+            actions.append("restarted Hammerspoon")
+        return actions
 
 
 
