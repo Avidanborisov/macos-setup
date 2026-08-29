@@ -75,8 +75,8 @@ class Dock(Component):
     # make the reveal instant instead of the sluggish default.
     spec = DefaultsSpec("com.apple.dock", {
         "autohide": True,
-        "autohide-delay": 0.0,             # appear the moment the cursor hits bottom
-        "autohide-time-modifier": 0.15,    # near-instant slide animation
+        "autohide-delay": 0.15,            # slight pause before revealing (avoids twitchy pops)
+        "autohide-time-modifier": 0.4,     # quick but visible slide animation
         "tilesize": 44,                    # compact
         "magnification": False,            # Windows doesn't zoom taskbar icons
         "show-recents": False,             # only pinned + running apps
