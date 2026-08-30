@@ -41,6 +41,12 @@ class SystemDefaults(Component):
     description = "F-keys standard, English locale, trackpad stays natural"
 
     specs = [
+        # Screenshots must land in a file for Win+PrintScreen (Cmd+Shift+3) to
+        # behave like Windows. "target" is global: with it set to clipboard,
+        # every non-Control screenshot shortcut silently copies instead of
+        # saving. The Control variants (our PrintScreen = Cmd+Ctrl+Shift+4)
+        # still go to the clipboard regardless, so both behaviors coexist.
+        DefaultsSpec("com.apple.screencapture", {"target": "file"}),
         DefaultsSpec("NSGlobalDomain", {
             "com.apple.keyboard.fnState": True,   # F-keys act as F-keys
             "AppleLanguages": ["en"],

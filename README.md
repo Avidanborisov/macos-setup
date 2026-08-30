@@ -98,7 +98,7 @@ have a Mac layout too.
 | Win+D → F17 | Toggles macOS Show Desktop (hotkey rebound to F17; press again to bring windows back) |
 | Win+E | Open home folder in Finder |
 | Win+Tab | Mission Control (Task View) |
-| PrintScreen (or F13) | Region screenshot to clipboard (Cmd+Ctrl+Shift+4, Snipping-Tool style); Win+PrintScreen = full screen to file (Cmd+Shift+3) |
+| PrintScreen (or F13) | Region screenshot to clipboard (Cmd+Ctrl+Shift+4, Snipping-Tool style); Win+PrintScreen = full screen saved to a file (Cmd+Shift+3). The `system` component pins `com.apple.screencapture target=file`, without which every non-Control shortcut silently copies to the clipboard and no file is ever written |
 | Finder: F2 / Del / Ctrl+X,V / Alt+Up | Rename / move to Trash / cut-paste files / parent folder |
 | Ctrl+Space | Autocomplete in VS Code / Antigravity, blocked elsewhere; Alt+Space → Cmd+Space opens Spotlight |
 | Alt+Shift (tap) | Toggle input source ABC ↔ Hebrew (`select_input_source`, 2s tap window) |
