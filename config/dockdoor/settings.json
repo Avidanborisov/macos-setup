@@ -4,6 +4,7 @@
   "dockBackgroundStyle": "liquidGlass",
   "dockClickAction": "minimize",
   "dockPreviewControlPosition": "topTrailing",
+  "enableDockPreviews": true,
   "enableWindowSwitcher": false,
   "enabledTrafficLightButtons": [
     "close",
