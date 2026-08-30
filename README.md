@@ -98,7 +98,7 @@ have a Mac layout too.
 | Win+D → F17 | Toggles macOS Show Desktop (hotkey rebound to F17; press again to bring windows back) |
 | Win+E | Open home folder in Finder |
 | Win+Tab | Mission Control (Task View) |
-| PrintScreen (or F13) | Region screenshot to the clipboard (Cmd+Ctrl+Shift+4, Snipping-Tool style); Win+PrintScreen = whole screen to the clipboard (Cmd+Ctrl+Shift+3). Both use the Control variants, which always copy and never write files to the Desktop; `system` also pins `com.apple.screencapture target=clipboard` so any other screenshot shortcut behaves the same |
+| PrintScreen (or F13) | Region screenshot to the clipboard; Win+PrintScreen = the whole display **the cursor is on**, to the clipboard. Both run `macsetup-screenshot`, because macOS's own whole-screen shortcut only ever captures the Main Display — on a multi-display setup it silently grabs the wrong screen. Nothing is written to the Desktop; `system` also pins `com.apple.screencapture target=clipboard` |
 | Finder: F2 / Del / Ctrl+X,V / Alt+Up | Rename / move to Trash / cut-paste files / parent folder |
 | Ctrl+Space | Autocomplete in VS Code / Antigravity, blocked elsewhere; Alt+Space → Cmd+Space opens Spotlight |
 | Alt+Shift (tap) | Toggle input source ABC ↔ Hebrew (`select_input_source`, 2s tap window) |

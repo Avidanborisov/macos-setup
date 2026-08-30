@@ -30,12 +30,14 @@ class Ghostty(FileComponent):
 
 class Scripts(FileComponent):
     name = "scripts"
-    description = "Helper scripts in ~/.local/bin (tmux launcher)"
+    description = "Helper scripts in ~/.local/bin (tmux launcher, wake repair, screenshots)"
     pairs = [
         (util.CONFIG / "bin" / "ghostty-tmux-launch",
          util.HOME / ".local" / "bin" / "ghostty-tmux-launch", 0o755),
         (util.CONFIG / "bin" / "macsetup-karabiner-wake",
          util.HOME / ".local" / "bin" / "macsetup-karabiner-wake", 0o755),
+        (util.CONFIG / "bin" / "macsetup-screenshot",
+         util.HOME / ".local" / "bin" / "macsetup-screenshot", 0o755),
     ]
 
 
