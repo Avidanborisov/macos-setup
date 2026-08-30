@@ -43,13 +43,20 @@ fi
 
 quoted="$(python3 -c 'import shlex,sys; print(shlex.join(sys.argv[1:]))' -- "${cmd[@]}")"
 
+# Ghostty runs the configured command as: bash -c "exec -l <command>". That
+# means the command must be a bare executable — a string starting with a shell
+# builtin (export) or containing ";" gets mangled, and Ghostty also inserts
+# "--" between a command and its args. A tiny self-contained script sidesteps
+# all of it.
+tmp="$(mktemp "${TMPDIR:-/tmp}/sshwin.XXXXXX")"
+printf '#!/bin/sh\nexport TERM=tmux-256color\nexec %s\n' "$quoted" > "$tmp"
+chmod +x "$tmp"
+
 # Drive Ghostty through its AppleScript API so the window opens in the RUNNING
-# instance. The obvious alternatives are both wrong on macOS:
-#   open -na  … starts a second copy of the app, which gets its own Dock icon
-#   open -a <script>  … prompts "Allow Ghostty to execute…", opens a tab, and
-#                       races the temp file's cleanup
-# The command runs through a shell, so the TERM export can ride along.
-osascript - "export TERM=tmux-256color; exec $quoted" <<'APPLESCRIPT'
+# instance. The alternatives are both wrong on macOS:
+#   open -na           starts a second copy of the app, with its own Dock icon
+#   open -a <script>   prompts "Allow Ghostty to execute…" and opens a tab
+osascript - "$tmp" <<'APPLESCRIPT'
 on run argv
   tell application "Ghostty"
     set cfg to new surface configuration
@@ -58,3 +65,7 @@ on run argv
   end tell
 end run
 APPLESCRIPT
+
+# Clean up once Ghostty has had time to start the script.
+(sleep 5 && rm -f "$tmp") &
+disown
