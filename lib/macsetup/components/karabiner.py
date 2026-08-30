@@ -1,7 +1,21 @@
-"""Karabiner-Elements: render config template + per-device mappings, install, verify."""
+"""Karabiner-Elements: render config template + per-device overrides, install, verify.
+
+Modifier-swap design (any keyboard works without per-device setup):
+
+- The PROFILE-level simple_modifications hold the Windows-layout swap
+  (physical Ctrl|Win|Alt -> Command|Option|Control). Karabiner compiles
+  device-scoped simple modifications BEFORE profile-level ones and matching is
+  first-match, so profile-level entries act as a fallback for any keyboard
+  without its own entry — i.e. every external Windows-layout keyboard, current
+  or future, is covered with zero configuration.
+- The BUILT-IN keyboard has a device-scoped override in the template (Mac
+  layout: Ctrl<->Cmd swap, Option kept as itself via an identity mapping so
+  the profile fallback can't touch it, plus the paragraph-sign key).
+- Apple-vendor EXTERNAL keyboards also have a Mac layout, so `apply` generates
+  the same Mac-layout override for any that are connected.
+"""
 
 import json
-from pathlib import Path
 
 from ..framework import Check, Component, Warning_
 from .. import util
@@ -9,24 +23,23 @@ from .. import util
 TEMPLATE = util.CONFIG / "karabiner" / "karabiner.json"
 DEST = util.HOME / ".config" / "karabiner" / "karabiner.json"
 
-# Vendors whose external keyboards have a Mac layout (Cmd next to Space);
-# the Windows-layout modifier swap must NOT be applied to them.
+# Vendors whose keyboards have a Mac layout (Cmd next to Space).
 APPLE_VENDOR_IDS = {76, 1452}
 
-# Modifier swap for external Windows-layout keyboards
-# (physical Ctrl|Win|Alt -> Command|Option|Control).
-EXTERNAL_SIMPLE_MODS = [
+# Override for Apple-layout external keyboards: same net behavior as the
+# built-in keyboard (identity mappings block the profile-level fallback).
+MAC_LAYOUT_MODS = [
     {"from": {"key_code": "left_control"}, "to": [{"key_code": "left_command"}]},
-    {"from": {"key_code": "left_command"}, "to": [{"key_code": "left_option"}]},
-    {"from": {"key_code": "left_option"}, "to": [{"key_code": "left_control"}]},
+    {"from": {"key_code": "left_command"}, "to": [{"key_code": "left_control"}]},
+    {"from": {"key_code": "left_option"}, "to": [{"key_code": "left_option"}]},
     {"from": {"key_code": "right_control"}, "to": [{"key_code": "right_command"}]},
-    {"from": {"key_code": "right_command"}, "to": [{"key_code": "right_option"}]},
-    {"from": {"key_code": "right_option"}, "to": [{"key_code": "right_control"}]},
+    {"from": {"key_code": "right_command"}, "to": [{"key_code": "right_control"}]},
+    {"from": {"key_code": "right_option"}, "to": [{"key_code": "right_option"}]},
 ]
 
 
-def connected_external_keyboards():
-    """External, physical, non-Apple keyboards Karabiner currently sees."""
+def connected_apple_external_keyboards():
+    """Connected physical Apple-vendor keyboards that aren't the built-in one."""
     p = util.run([util.KARABINER_CLI, "--list-connected-devices"])
     if p.returncode != 0:
         return []
@@ -34,7 +47,7 @@ def connected_external_keyboards():
         devices = json.loads(p.stdout)
     except json.JSONDecodeError:
         return []
-    out = []
+    out, seen = [], set()
     for d in devices:
         ident = d.get("device_identifiers", {})
         if not ident.get("is_keyboard"):
@@ -44,23 +57,18 @@ def connected_external_keyboards():
         if ident.get("is_virtual_device"):
             continue
         vid, pid = ident.get("vendor_id"), ident.get("product_id")
-        if vid is None or pid is None or vid in APPLE_VENDOR_IDS:
+        if vid not in APPLE_VENDOR_IDS or pid is None:
             continue
-        out.append({"vendor_id": vid, "product_id": pid})
-    # unique by (vid, pid)
-    seen, uniq = set(), []
-    for d in out:
-        key = (d["vendor_id"], d["product_id"])
-        if key not in seen:
-            seen.add(key)
-            uniq.append(d)
-    return uniq
+        if (vid, pid) not in seen:
+            seen.add((vid, pid))
+            out.append({"vendor_id": vid, "product_id": pid})
+    return out
 
 
 def _device_entry(vid, pid):
     return {
         "identifiers": {"is_keyboard": True, "vendor_id": vid, "product_id": pid},
-        "simple_modifications": EXTERNAL_SIMPLE_MODS,
+        "simple_modifications": MAC_LAYOUT_MODS,
     }
 
 
@@ -70,17 +78,17 @@ def _is_generated_entry(dev):
 
 
 def render():
-    """Template + generated device entries for currently-connected keyboards."""
+    """Template + Mac-layout overrides for connected Apple external keyboards."""
     config = json.loads(TEMPLATE.read_text())
     devices = config["profiles"][0].setdefault("devices", [])
-    for kb in connected_external_keyboards():
+    for kb in connected_apple_external_keyboards():
         devices.append(_device_entry(kb["vendor_id"], kb["product_id"]))
     return config
 
 
 class Karabiner(Component):
     name = "karabiner"
-    description = "Key remapping rules and per-keyboard modifier swaps"
+    description = "Key remapping: profile-wide Windows swap (any keyboard), Mac-layout overrides"
     manual = [
         "Grant Accessibility to karabiner_grabber (System Settings → Privacy & Security → Accessibility)",
         "Grant Input Monitoring to karabiner_grabber and karabiner_observer",
@@ -111,30 +119,25 @@ class Karabiner(Component):
                          note="" if ok else "run `macsetup apply karabiner` "
                               "(or `adopt` if the live edit is intentional)"))
 
-        # 2) Every connected external keyboard must have a device entry.
-        connected = connected_external_keyboards()
+        # 2) Connected Apple external keyboards need a Mac-layout override,
+        #    or the profile-level Windows swap would wrongly apply to them.
+        connected = connected_apple_external_keyboards()
         covered = {(d["identifiers"].get("vendor_id"), d["identifiers"].get("product_id"))
-                   for d in live_generated}
+                   for d in live_generated
+                   if util.norm(d.get("simple_modifications")) == util.norm(MAC_LAYOUT_MODS)}
         missing = [kb for kb in connected
                    if (kb["vendor_id"], kb["product_id"]) not in covered]
-        out.append(Check("connected external keyboards mapped", not missing,
-                         f"{len(connected)} keyboard(s) covered",
+        out.append(Check("Apple external keyboards have Mac-layout overrides", not missing,
+                         f"{len(connected)} Apple external keyboard(s) covered",
                          "all covered" if not missing else
                          "unmapped: " + ", ".join(f"vid={k['vendor_id']} pid={k['product_id']}"
                                                   for k in missing)))
-
-        # 3) Generated entries use the current modifier swap.
-        stale = [d for d in live_generated
-                 if util.norm(d.get("simple_modifications")) != util.norm(EXTERNAL_SIMPLE_MODS)]
-        out.append(Check("external keyboard modifier swap current", not stale,
-                         "standard Windows-layout swap",
-                         "current" if not stale else f"{len(stale)} stale entrie(s)"))
         return out
 
     def apply(self):
         desired = render()
-        # Keep device entries for keyboards that aren't currently connected
-        # (e.g. an external keyboard at another desk).
+        # Keep Mac-layout overrides for Apple keyboards that aren't currently
+        # connected (e.g. one at another desk).
         if DEST.exists():
             try:
                 live = json.loads(DEST.read_text())
@@ -142,9 +145,9 @@ class Karabiner(Component):
                         for d in desired["profiles"][0]["devices"] if _is_generated_entry(d)}
                 for d in live["profiles"][0].get("devices", []):
                     if _is_generated_entry(d):
-                        key = (d["identifiers"].get("vendor_id"),
-                               d["identifiers"].get("product_id"))
-                        if key not in have:
+                        ident = d["identifiers"]
+                        key = (ident.get("vendor_id"), ident.get("product_id"))
+                        if key not in have and key[0] in APPLE_VENDOR_IDS:
                             desired["profiles"][0]["devices"].append(
                                 _device_entry(*key))
             except (json.JSONDecodeError, KeyError):
@@ -171,4 +174,20 @@ class Karabiner(Component):
                 out.append(Warning_(
                     f"{proc} not running", why,
                     fix="open Karabiner-Elements and grant its permissions"))
+        # After sleep/wake Karabiner tears down and recreates its virtual
+        # keyboard; if the last recorded state is not-ready, remapping is dead
+        # or dying (all shortcuts revert to raw keys) until it recovers.
+        try:
+            lines = [l for l in
+                     open("/var/log/karabiner/core_service.log", errors="ignore")
+                     if "virtual_hid_keyboard_ready_response" in l]
+            if lines and lines[-1].rstrip().endswith("false"):
+                out.append(Warning_(
+                    "Karabiner virtual keyboard not ready",
+                    "the last logged state is not-ready (often after sleep/wake); "
+                    "remapping may be inactive",
+                    fix="wait a few seconds; if it persists, quit and reopen "
+                        "Karabiner-Elements"))
+        except OSError:
+            pass
         return out

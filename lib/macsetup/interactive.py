@@ -168,10 +168,6 @@ def gui_tests():
                 "In TextEdit, type a line, then hold physical Ctrl and tap Right Shift "
                 "(then Ctrl+LeftShift to go back).",
                 "Did the paragraph flip to right-aligned RTL and back?"),
-        GuiTest("Ctrl+RightShift RTL in Chrome",
-                "In Chrome, click into any text box (e.g. a Gmail compose), hold physical "
-                "Ctrl and tap Right Shift (needs the rtl-toggle extension loaded).",
-                "Did the field flip to RTL (and back with Ctrl+LeftShift)?"),
         GuiTest("Ctrl+Tab switches tabs",
                 "In a browser with 2+ tabs, hold physical Ctrl and press Tab.",
                 "Did it switch to the next tab?"),

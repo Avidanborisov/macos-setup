@@ -330,10 +330,8 @@
                         ]
                     },
                     {
-                        "description": "Ctrl+Left/Right Shift sets paragraph direction LTR/RTL (Windows-style; F18/F19 to the rtl-toggle extension in Chrome, Writing Direction menu chord elsewhere)",
+                        "description": "Ctrl+Left/Right Shift sets paragraph direction LTR/RTL (Windows-style; triggers the Writing Direction menu items via NSUserKeyEquivalents)",
                         "manipulators": [
-                            { "type": "basic", "from": { "key_code": "left_shift", "modifiers": { "mandatory": ["command"], "optional": [] } }, "to": [{ "key_code": "left_shift", "modifiers": ["left_command"] }], "to_if_alone": [{ "key_code": "f18" }], "parameters": { "basic.to_if_alone_timeout_milliseconds": 2000 }, "conditions": [{ "type": "frontmost_application_if", "bundle_identifiers": ["^com\\.google\\.Chrome$"] }] },
-                            { "type": "basic", "from": { "key_code": "right_shift", "modifiers": { "mandatory": ["command"], "optional": [] } }, "to": [{ "key_code": "right_shift", "modifiers": ["left_command"] }], "to_if_alone": [{ "key_code": "f19" }], "parameters": { "basic.to_if_alone_timeout_milliseconds": 2000 }, "conditions": [{ "type": "frontmost_application_if", "bundle_identifiers": ["^com\\.google\\.Chrome$"] }] },
                             { "type": "basic", "from": { "key_code": "left_shift", "modifiers": { "mandatory": ["command"], "optional": [] } }, "to": [{ "key_code": "left_shift", "modifiers": ["left_command"] }], "to_if_alone": [{ "key_code": "l", "modifiers": ["left_command", "left_option", "left_control"] }], "parameters": { "basic.to_if_alone_timeout_milliseconds": 2000 } },
                             { "type": "basic", "from": { "key_code": "right_shift", "modifiers": { "mandatory": ["command"], "optional": [] } }, "to": [{ "key_code": "right_shift", "modifiers": ["left_command"] }], "to_if_alone": [{ "key_code": "r", "modifiers": ["left_command", "left_option", "left_control"] }], "parameters": { "basic.to_if_alone_timeout_milliseconds": 2000 } }
                         ]
@@ -485,7 +483,14 @@
             },
             "name": "Default profile",
             "selected": true,
-            "simple_modifications": [],
+            "simple_modifications": [
+                { "from": { "key_code": "left_control" }, "to": [{ "key_code": "left_command" }] },
+                { "from": { "key_code": "left_command" }, "to": [{ "key_code": "left_option" }] },
+                { "from": { "key_code": "left_option" }, "to": [{ "key_code": "left_control" }] },
+                { "from": { "key_code": "right_control" }, "to": [{ "key_code": "right_command" }] },
+                { "from": { "key_code": "right_command" }, "to": [{ "key_code": "right_option" }] },
+                { "from": { "key_code": "right_option" }, "to": [{ "key_code": "right_control" }] }
+            ],
             "devices": [
                 {
                     "identifiers": {
@@ -495,8 +500,10 @@
                     "simple_modifications": [
                         { "from": { "key_code": "left_control" }, "to": [{ "key_code": "left_command" }] },
                         { "from": { "key_code": "left_command" }, "to": [{ "key_code": "left_control" }] },
+                        { "from": { "key_code": "left_option" }, "to": [{ "key_code": "left_option" }] },
                         { "from": { "key_code": "right_control" }, "to": [{ "key_code": "right_command" }] },
                         { "from": { "key_code": "right_command" }, "to": [{ "key_code": "right_control" }] },
+                        { "from": { "key_code": "right_option" }, "to": [{ "key_code": "right_option" }] },
                         { "from": { "key_code": "non_us_backslash" }, "to": [{ "key_code": "grave_accent_and_tilde" }] }
                     ]
                 }
