@@ -96,7 +96,9 @@ chmod +x "$tmp"
 # instance. The alternatives are both wrong on macOS:
 #   open -na           starts a second copy of the app, with its own Dock icon
 #   open -a <script>   prompts "Allow Ghostty to execute…" and opens a tab
-osascript - "$tmp" <<'APPLESCRIPT'
+# >/dev/null: the AppleScript returns the new window's id, which would
+# otherwise be echoed into the shell that invoked sshwin.
+osascript - "$tmp" >/dev/null <<'APPLESCRIPT'
 on run argv
   tell application "Ghostty"
     set cfg to new surface configuration
