@@ -41,21 +41,20 @@ if ((use_tmux)); then
   cmd+=("${SSHWIN_REMOTE_CMD:-tmux -u new -A -s main}")
 fi
 
-# Write a temp script that execs ssh, then tell Ghostty to run it.
-# Ghostty's -e inserts "--" between the command and args, which breaks
-# /bin/sh -c. A self-deleting script avoids that entirely.
-tmp="$(mktemp "${TMPDIR:-/tmp}/sshwin.XXXXXX")"
-printf '#!/bin/sh\nexport TERM=tmux-256color\nexec %s\n' \
-  "$(python3 -c 'import shlex,sys; print(shlex.join(sys.argv[1:]))' -- "${cmd[@]}")" \
-  > "$tmp"
-chmod +x "$tmp"
+quoted="$(python3 -c 'import shlex,sys; print(shlex.join(sys.argv[1:]))' -- "${cmd[@]}")"
 
-# Open in the RUNNING Ghostty (a new window), not a second app instance:
-# "open -na" launches a separate copy, which gets its own Dock icon. Ghostty
-# registers as a handler for executable scripts, so plain "open -a <script>"
-# runs it in a new window of the existing instance.
-open -a Ghostty "$tmp"
-
-# Clean up after Ghostty has had time to read the script.
-(sleep 5 && rm -f "$tmp") &
-disown
+# Drive Ghostty through its AppleScript API so the window opens in the RUNNING
+# instance. The obvious alternatives are both wrong on macOS:
+#   open -na  … starts a second copy of the app, which gets its own Dock icon
+#   open -a <script>  … prompts "Allow Ghostty to execute…", opens a tab, and
+#                       races the temp file's cleanup
+# The command runs through a shell, so the TERM export can ride along.
+osascript - "export TERM=tmux-256color; exec $quoted" <<'APPLESCRIPT'
+on run argv
+  tell application "Ghostty"
+    set cfg to new surface configuration
+    set command of cfg to (item 1 of argv)
+    new window with configuration cfg
+  end tell
+end run
+APPLESCRIPT
