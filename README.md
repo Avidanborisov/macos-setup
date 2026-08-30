@@ -35,7 +35,7 @@ off, run `./macsetup doctor` — it reports exactly which setting drifted, and
 | `input` | Keyboard layouts: English (ABC) + Hebrew enabled out of the box (Alt+Shift toggles) |
 | `dock` | Windows-taskbar-style Dock: instant reveal at the bottom of *any* display (a pinned Dock only exists on one screen — macOS limitation), compact tiles, no magnification, minimize into app icon |
 | `hotkeys` | macOS symbolic hotkeys: Ctrl+Arrow Mission Control/Spaces shortcuts off (they'd steal AltTab's arrow navigation); Ctrl+Space input switching off (Karabiner switches language directly, and VS Code needs Ctrl+Space for autocomplete); Show Desktop rebound to F17 for Win+D |
-| `karabiner` | All key remapping. The Windows modifier swap is profile-wide (works on any keyboard automatically); the built-in keyboard and Apple external keyboards get Mac-layout overrides |
+| `karabiner` | All key remapping. The Windows modifier swap is profile-wide (works on any keyboard automatically); the built-in keyboard and Apple external keyboards get Mac-layout overrides. Also installs the wake self-repair agent (see below) |
 | `keybindings` | `DefaultKeyBinding.dict`: Page Up/Down move the cursor in Cocoa apps |
 | `ghostty` | Ghostty config, icon, and the `ghostty-tmux-launch` script |
 | `tmux` | `~/.tmux.conf` (oh-my-tmux) + `~/.tmux.conf.local` (prefix = C-a) |
@@ -125,6 +125,30 @@ Ordering constraints encoded in the template:
   rule needs.
 - Finder cut/paste works via a `finder_cut` variable: Ctrl+X copies and arms
   it, Ctrl+V then pastes-as-move (Cmd+Option+V); plain Ctrl+C disarms it.
+
+### Sleep/wake self-repair
+
+Karabiner can come back from sleep half-working: it tears down and recreates
+its virtual keyboard, and afterwards *simple* modifications still apply while
+*complex* modifications silently stop firing. The keys are still remapped, but
+Win+Arrow, Ctrl+Arrow, Ctrl+Backspace (which then falls through to macOS's
+delete-to-start-of-line) and the language toggle all do nothing. Nothing in
+Karabiner's config or logs reports it — reloading the config does not help, but
+restarting its services does.
+
+`macsetup apply karabiner` installs a LaunchAgent
+(`com.macsetup.karabiner-wake`) that repairs this automatically. launchd has no
+wake trigger, so it runs on a `StartInterval`: the timer expires while the Mac
+sleeps and launchd fires the job right after wake. The script
+(`config/bin/macsetup-karabiner-wake`) then restarts Karabiner's agents exactly
+once per wake, reading `kern.waketime` and keeping the last handled wake in
+`~/.local/state/macsetup/karabiner-wake`.
+
+Details that matter: `kern.waketime` is `0` until the first real wake, so a
+fresh boot never triggers a restart; the script waits 10s after wake so a
+restart can't strand a key down; it records the wake before acting so a failure
+can't loop; and `apply` seeds the state file, so installing the agent never
+restarts Karabiner as a side effect.
 
 ### Home/End and the tmux C-a prefix
 

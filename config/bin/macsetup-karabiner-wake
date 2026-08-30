@@ -1,0 +1,53 @@
+#!/bin/sh
+# macsetup: keep Karabiner working across sleep/wake.
+#
+# On wake, Karabiner tears down and recreates its virtual keyboard. It can come
+# back in a half-working state where *simple* modifications still apply but
+# *complex* modifications silently stop firing — the keys are remapped, yet
+# Win+Arrow, Ctrl+Arrow, Ctrl+Backspace and the language toggle all do nothing.
+# Nothing in Karabiner's config or logs reports this, so it can't be detected;
+# restarting its agents fixes it.
+#
+# launchd has no wake trigger, so this runs on a StartInterval instead: while
+# the Mac sleeps the timer expires, and launchd fires the job right after wake.
+# `kern.waketime` gives the last wake, and a state file makes this act exactly
+# once per wake rather than on every tick.
+
+set -eu
+
+state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/macsetup"
+state_file="$state_dir/karabiner-wake"
+mkdir -p "$state_dir"
+
+# kern.waketime looks like: { sec = 1788077691, usec = 355427 } Sun Aug 30 ...
+# Anchor at the start and take the FIRST number: a greedy `.*sec = ` would
+# match through "usec = " and capture the microseconds instead.
+wake=$(sysctl -n kern.waketime 2>/dev/null | sed -n 's/^[^0-9]*\([0-9][0-9]*\).*/\1/p')
+case "$wake" in
+    ''|*[!0-9]*) exit 0 ;;
+esac
+
+last=$(cat "$state_file" 2>/dev/null || echo 0)
+case "$last" in
+    ''|*[!0-9]*) last=0 ;;
+esac
+# kern.waketime stays 0 until the machine's first real wake, so a fresh boot
+# never satisfies this and Karabiner is left alone after a clean start.
+[ "$wake" -gt "$last" ] || exit 0
+
+# Record the wake first: if anything below fails we must not retry in a loop.
+echo "$wake" >"$state_file"
+
+# Let input devices settle after wake before touching Karabiner: right after
+# wake they are still being re-grabbed, and restarting mid-keypress risks
+# stranding that key down.
+sleep 10
+
+# Only nudge Karabiner if it is meant to be running — never start it for the
+# user, who may have quit it deliberately.
+if pgrep -x Karabiner-Core-Service >/dev/null 2>&1; then
+    for svc in Karabiner-Core-Service karabiner_console_user_server; do
+        launchctl kickstart -k "gui/$(id -u)/org.pqrs.service.agent.$svc" \
+            >/dev/null 2>&1 || true
+    done
+fi

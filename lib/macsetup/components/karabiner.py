@@ -16,6 +16,9 @@ Modifier-swap design (any keyboard works without per-device setup):
 """
 
 import json
+import os
+import plistlib
+import re
 
 from ..framework import Check, Component, Warning_
 from .. import util
@@ -86,13 +89,94 @@ def render():
     return config
 
 
+WAKE_LABEL = "com.macsetup.karabiner-wake"
+WAKE_PLIST = util.HOME / "Library" / "LaunchAgents" / f"{WAKE_LABEL}.plist"
+WAKE_SCRIPT = util.HOME / ".local" / "bin" / "macsetup-karabiner-wake"
+
+
+def _wake_agent_plist():
+    """LaunchAgent that repairs Karabiner after sleep/wake.
+
+    StartInterval (not a wake trigger, which launchd lacks): the timer expires
+    while the Mac sleeps, so launchd runs the job right after wake. The script
+    itself acts only once per wake.
+    """
+    return {
+        "Label": WAKE_LABEL,
+        "ProgramArguments": [str(WAKE_SCRIPT)],
+        "StartInterval": 60,
+        "RunAtLoad": True,
+        "ProcessType": "Background",
+        "LowPriorityIO": True,
+    }
+
+
 class Karabiner(Component):
     name = "karabiner"
-    description = "Key remapping: profile-wide Windows swap (any keyboard), Mac-layout overrides"
+    description = "Key remapping: profile-wide Windows swap (any keyboard), wake self-repair"
     manual = [
         "Grant Accessibility to karabiner_grabber (System Settings → Privacy & Security → Accessibility)",
         "Grant Input Monitoring to karabiner_grabber and karabiner_observer",
     ]
+
+    def _agent_loaded(self):
+        return util.run_ok(["launchctl", "print",
+                            f"gui/{os.getuid()}/{WAKE_LABEL}"])
+
+    def _agent_checks(self):
+        want = _wake_agent_plist()
+        try:
+            have = plistlib.loads(WAKE_PLIST.read_bytes())
+        except (OSError, plistlib.InvalidFileException):
+            have = None
+        installed = have == want
+        loaded = self._agent_loaded()
+        return [
+            Check("wake self-repair agent installed", installed,
+                  f"{WAKE_PLIST.name} matching spec",
+                  "installed" if installed else
+                  ("missing" if have is None else "outdated")),
+            Check("wake self-repair agent loaded", loaded, "loaded in launchd",
+                  "loaded" if loaded else "not loaded"),
+        ]
+
+    @staticmethod
+    def _seed_wake_state():
+        """Mark the current wake as handled.
+
+        The agent runs at load; without this, installing it would restart
+        Karabiner immediately — an unwanted side effect of `apply`, and a
+        restart mid-keypress can strand a key down.
+        """
+        state = (util.HOME / ".local" / "state" / "macsetup" / "karabiner-wake")
+        if state.exists():
+            return
+        p = util.run(["sysctl", "-n", "kern.waketime"])
+        m = re.search(r"(\d+)", p.stdout or "")
+        if m:
+            state.parent.mkdir(parents=True, exist_ok=True)
+            state.write_text(m.group(1) + "\n")
+
+    def _apply_agent(self):
+        actions = []
+        self._seed_wake_state()
+        want = _wake_agent_plist()
+        try:
+            have = plistlib.loads(WAKE_PLIST.read_bytes())
+        except (OSError, plistlib.InvalidFileException):
+            have = None
+        if have != want:
+            WAKE_PLIST.parent.mkdir(parents=True, exist_ok=True)
+            WAKE_PLIST.write_bytes(plistlib.dumps(want))
+            actions.append(f"installed {WAKE_PLIST.name}")
+        if actions or not self._agent_loaded():
+            domain = f"gui/{os.getuid()}"
+            util.run(["launchctl", "bootout", f"{domain}/{WAKE_LABEL}"])
+            if util.run_ok(["launchctl", "bootstrap", domain, str(WAKE_PLIST)]):
+                actions.append("loaded wake self-repair agent")
+            else:
+                actions.append("FAILED to load wake self-repair agent")
+        return actions
 
     def checks(self):
         out = []
@@ -132,6 +216,7 @@ class Karabiner(Component):
                          "all covered" if not missing else
                          "unmapped: " + ", ".join(f"vid={k['vendor_id']} pid={k['product_id']}"
                                                   for k in missing)))
+        out.extend(self._agent_checks())
         return out
 
     def apply(self):
@@ -144,7 +229,12 @@ class Karabiner(Component):
                 have = {(d["identifiers"].get("vendor_id"), d["identifiers"].get("product_id"))
                         for d in desired["profiles"][0]["devices"] if _is_generated_entry(d)}
                 for d in live["profiles"][0].get("devices", []):
-                    if _is_generated_entry(d):
+                    # Only carry over entries this tool generated (a Mac-layout
+                    # override for an Apple keyboard). Anything else in the live
+                    # file is a manual edit and must not be resurrected.
+                    if (_is_generated_entry(d)
+                            and util.norm(d.get("simple_modifications"))
+                            == util.norm(MAC_LAYOUT_MODS)):
                         ident = d["identifiers"]
                         key = (ident.get("vendor_id"), ident.get("product_id"))
                         if key not in have and key[0] in APPLE_VENDOR_IDS:
@@ -152,15 +242,17 @@ class Karabiner(Component):
                                 _device_entry(*key))
             except (json.JSONDecodeError, KeyError):
                 pass
+        actions = []
         text = json.dumps(desired, indent=4) + "\n"
-        if DEST.exists() and DEST.read_text() == text:
-            return []
-        DEST.parent.mkdir(parents=True, exist_ok=True)
-        if DEST.exists():
-            import shutil
-            shutil.copy2(DEST, util.backup_path(DEST))
-        DEST.write_text(text)
-        return ["installed karabiner.json (Karabiner reloads automatically)"]
+        if not DEST.exists() or DEST.read_text() != text:
+            DEST.parent.mkdir(parents=True, exist_ok=True)
+            if DEST.exists():
+                import shutil
+                shutil.copy2(DEST, util.backup_path(DEST))
+            DEST.write_text(text)
+            actions.append("installed karabiner.json (Karabiner reloads automatically)")
+        actions.extend(self._apply_agent())
+        return actions
 
     def warnings(self):
         out = []

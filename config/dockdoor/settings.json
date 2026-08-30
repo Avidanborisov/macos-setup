@@ -20,7 +20,7 @@
   "showAnimations": true,
   "showAppName": true,
   "showMassActionButtons": false,
-  "showMenuBarIcon": true,
+  "showMenuBarIcon": false,
   "showWindowTitle": false,
   "trafficLightButtonScale": 0.75,
   "trafficLightButtonsVisibility": "dimmedOnPreviewHover",

@@ -34,6 +34,8 @@ class Scripts(FileComponent):
     pairs = [
         (util.CONFIG / "bin" / "ghostty-tmux-launch",
          util.HOME / ".local" / "bin" / "ghostty-tmux-launch", 0o755),
+        (util.CONFIG / "bin" / "macsetup-karabiner-wake",
+         util.HOME / ".local" / "bin" / "macsetup-karabiner-wake", 0o755),
     ]
 
 
