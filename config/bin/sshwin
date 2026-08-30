@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# sshwin — open a new Ghostty window and run ssh inside it
+#
+# Usage: sshwin [--no-tmux] [ssh args...]
+#
+# Flags:
+#   --no-tmux          skip the remote tmux command and -t flag
+#
+# Environment:
+#   SSHWIN_REMOTE_CMD  override the default remote command (default: tmux -u new -A -s main)
+
+set -euo pipefail
+
+use_tmux=1
+declare -a ssh_args=()
+
+for arg in "$@"; do
+  if [[ "$arg" == "--no-tmux" ]]; then
+    use_tmux=0
+  else
+    ssh_args+=("$arg")
+  fi
+done
+
+if ((${#ssh_args[@]} == 0)); then
+  printf 'Usage: sshwin [--no-tmux] [ssh args...]\n' >&2
+  exit 1
+fi
+
+ssh_bin="$(command -v ssh)"
+
+declare -a cmd=("$ssh_bin")
+
+if ((use_tmux)); then
+  cmd+=("-t")
+fi
+
+cmd+=("${ssh_args[@]}")
+
+if ((use_tmux)); then
+  cmd+=("${SSHWIN_REMOTE_CMD:-tmux -u new -A -s main}")
+fi
+
+# Write a temp script that execs ssh, then tell Ghostty to run it.
+# Ghostty's -e inserts "--" between the command and args, which breaks
+# /bin/sh -c. A self-deleting script avoids that entirely.
+tmp="$(mktemp "${TMPDIR:-/tmp}/sshwin.XXXXXX")"
+printf '#!/bin/sh\nexport TERM=tmux-256color\nexec %s\n' \
+  "$(python3 -c 'import shlex,sys; print(shlex.join(sys.argv[1:]))' -- "${cmd[@]}")" \
+  > "$tmp"
+chmod +x "$tmp"
+
+# Open in the RUNNING Ghostty (a new window), not a second app instance:
+# "open -na" launches a separate copy, which gets its own Dock icon. Ghostty
+# registers as a handler for executable scripts, so plain "open -a <script>"
+# runs it in a new window of the existing instance.
+open -a Ghostty "$tmp"
+
+# Clean up after Ghostty has had time to read the script.
+(sleep 5 && rm -f "$tmp") &
+disown

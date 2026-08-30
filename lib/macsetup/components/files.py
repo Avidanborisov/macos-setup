@@ -38,6 +38,8 @@ class Scripts(FileComponent):
          util.HOME / ".local" / "bin" / "macsetup-karabiner-wake", 0o755),
         (util.CONFIG / "bin" / "macsetup-screenshot",
          util.HOME / ".local" / "bin" / "macsetup-screenshot", 0o755),
+        (util.CONFIG / "bin" / "sshwin",
+         util.HOME / ".local" / "bin" / "sshwin", 0o755),
     ]
 
 

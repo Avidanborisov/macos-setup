@@ -47,7 +47,7 @@ off, run `./macsetup doctor` — it reports exactly which setting drifted, and
 | `finder` | Explorer-like Finder: all extensions, path/status bar, folders first, list view, search current folder |
 | `swiftquit` | Swift Quit settings + running check |
 | `dockdoor` | DockDoor: click the active app's Dock icon to minimize, click again to restore (Windows taskbar); hover previews with controls embedded in the preview frame. Settings live in `config/dockdoor/settings.json` — tune them in DockDoor's UI, then `./macsetup adopt dockdoor` |
-| `scripts` | Helper scripts in `~/.local/bin` (tmux launcher) |
+| `scripts` | Helper scripts in `~/.local/bin`: tmux launcher, Karabiner wake repair, cursor-aware `macsetup-screenshot`, and `sshwin` (ssh in a new Ghostty window) |
 | `login` | Login items for all of the above |
 
 `./macsetup adopt` pulls live state back into the repo — for the file-based
