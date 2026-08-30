@@ -1,30 +1,62 @@
 #!/usr/bin/env bash
 # sshwin — open a new Ghostty window and run ssh inside it
 #
-# Usage: sshwin [--no-tmux] [ssh args...]
+# Usage: sshwin [--no-tmux] [-s SESSION | --session SESSION] [ssh args...]
 #
 # Flags:
 #   --no-tmux          skip the remote tmux command and -t flag
+#   -s, --session      remote tmux session to attach to / create (default: main)
+#                      also accepts --session=NAME
 #
 # Environment:
-#   SSHWIN_REMOTE_CMD  override the default remote command (default: tmux -u new -A -s main)
+#   SSHWIN_SESSION     default session name when -s is not given (default: main)
+#   SSHWIN_REMOTE_CMD  override the whole remote command; takes precedence over -s
 
 set -euo pipefail
 
 use_tmux=1
+session="${SSHWIN_SESSION:-main}"
 declare -a ssh_args=()
 
-for arg in "$@"; do
-  if [[ "$arg" == "--no-tmux" ]]; then
-    use_tmux=0
-  else
-    ssh_args+=("$arg")
-  fi
+usage() {
+  printf 'Usage: sshwin [--no-tmux] [-s SESSION] [ssh args...]\n' >&2
+  exit "${1:-1}"
+}
+
+while (($# > 0)); do
+  case "$1" in
+    --no-tmux)
+      use_tmux=0
+      ;;
+    -s|--session)
+      # ssh has no -s of its own that takes a name here, so this is safe.
+      [[ $# -ge 2 ]] || { printf 'sshwin: %s needs a session name\n' "$1" >&2; usage; }
+      session="$2"
+      shift
+      ;;
+    --session=*)
+      session="${1#--session=}"
+      ;;
+    --)
+      # Everything after -- is for ssh verbatim.
+      shift
+      ssh_args+=("$@")
+      break
+      ;;
+    *)
+      ssh_args+=("$1")
+      ;;
+  esac
+  shift
 done
 
-if ((${#ssh_args[@]} == 0)); then
-  printf 'Usage: sshwin [--no-tmux] [ssh args...]\n' >&2
+if [[ -z "$session" ]]; then
+  printf 'sshwin: session name must not be empty\n' >&2
   exit 1
+fi
+
+if ((${#ssh_args[@]} == 0)); then
+  usage
 fi
 
 ssh_bin="$(command -v ssh)"
@@ -38,10 +70,18 @@ fi
 cmd+=("${ssh_args[@]}")
 
 if ((use_tmux)); then
-  cmd+=("${SSHWIN_REMOTE_CMD:-tmux -u new -A -s main}")
+  # The remote command is one string parsed by the remote shell, so the
+  # session name is quoted for it. -A makes "new" attach to an existing
+  # session of that name instead of failing, so this creates or resumes.
+  if [[ -n "${SSHWIN_REMOTE_CMD:-}" ]]; then
+    cmd+=("$SSHWIN_REMOTE_CMD")
+  else
+    session_q="$(python3 -c 'import shlex,sys; print(shlex.quote(sys.argv[1]))' "$session")"
+    cmd+=("tmux -u new -A -s $session_q")
+  fi
 fi
 
-quoted="$(python3 -c 'import shlex,sys; print(shlex.join(sys.argv[1:]))' -- "${cmd[@]}")"
+quoted="$(python3 -c 'import shlex,sys; print(shlex.join(sys.argv[1:]))' "${cmd[@]}")"
 
 # Ghostty runs the configured command as: bash -c "exec -l <command>". That
 # means the command must be a bare executable — a string starting with a shell
