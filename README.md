@@ -66,12 +66,22 @@ with the same *logical* layout:
 
 | Physical key | Built-in Mac keyboard | External Windows keyboard |
 |---|---|---|
+| fn (leftmost) | → Command (a second Ctrl) | — |
 | Ctrl | → Command | → Command |
 | Win / Cmd | → Control (acts as Alt) | → Option (acts as Win) |
 | Alt / Option | → Option (acts as Win) | → Control (acts as Alt) |
 
 So in every complex rule below: **physical Ctrl = `command`, physical Win =
 `option`, physical Alt = `control`**.
+
+On the built-in keyboard (and Apple external keyboards, which share the
+layout) the leftmost key is `fn`, where a Windows keyboard has Ctrl. It is
+mapped to Command as well, so **both bottom-left keys are Windows-style Ctrl**
+and reaching for the corner key does the right thing. The cost is that the
+built-in keyboard loses every `fn` function: fn+Arrows (Home/End/Page Up/Down),
+fn+Delete (forward delete), the Touch Bar media strip and the emoji popup.
+Nothing breaks or conflicts — those combos now simply behave like the Control
+key beside them (fn+Left = word left, fn+Delete = delete word).
 
 The Windows-layout swap lives in the profile-level `simple_modifications`, so
 it applies to **any keyboard, current or future, with zero setup** — Karabiner
@@ -263,7 +273,7 @@ start/end (single press, including in ssh/tmux), DEL forward-deletes.
 | Ctrl+C/R/Z in VS Code's integrated terminal | Karabiner can't tell the terminal panel from the editor in the same app | Alt+C/R/Z works (physical Alt sends Control); or rebind in VS Code |
 | Ctrl+scroll zoom in browsers | Karabiner can't intercept scroll events | Ctrl+= / Ctrl+- page zoom |
 | Alt+<key> app shortcuts in unscoped apps | Physical Alt sends Control, apps expect Option | Rules exist for VS Code/Antigravity/browsers; add app-scoped rules as needed |
-| F11 on the built-in keyboard | No F11 on Touch Bar models | Fn+F11 or Ctrl+Cmd+F |
+| No `fn` key on the built-in keyboard | `fn` is remapped to a second Ctrl (deliberate — see above), so fn+Arrows, fn+Delete and the Touch Bar media strip are gone | Use the external keyboard's Home/End/Del keys; or remap the right-hand Command key to `fn` if the built-in ones are needed |
 | Finder Ctrl+X while renaming a file | Karabiner can't tell rename-edit mode from normal browsing, so Ctrl+X/V act on the file, not the selected text | Use Cmd+X/V equivalents via right-click, or finish the rename first |
 | Minimizing a **Finder** window leaves a tile next to the Trash | macOS special-cases Finder: it ignores "minimize into application icon" (verified — regular apps like TextEdit honor it, Finder never does). No setting changes this. | Close Finder windows with Ctrl+W when done; the tile disappears once the window is restored. Alt+Tab lists minimized windows, so they stay reachable. |
 | Logi Options+ | Manages the mouse independently; can fight UnnaturalScrollWheels | Keep its scroll direction on "Standard"; doctor warns otherwise |

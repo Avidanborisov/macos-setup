@@ -32,6 +32,9 @@ APPLE_VENDOR_IDS = {76, 1452}
 # Override for Apple-layout external keyboards: same net behavior as the
 # built-in keyboard (identity mappings block the profile-level fallback).
 MAC_LAYOUT_MODS = [
+    # fn is the leftmost key on Apple layouts; make it a second Ctrl like the
+    # bottom-left key on a Windows keyboard.
+    {"from": {"key_code": "fn"}, "to": [{"key_code": "left_command"}]},
     {"from": {"key_code": "left_control"}, "to": [{"key_code": "left_command"}]},
     {"from": {"key_code": "left_command"}, "to": [{"key_code": "left_control"}]},
     {"from": {"key_code": "left_option"}, "to": [{"key_code": "left_option"}]},

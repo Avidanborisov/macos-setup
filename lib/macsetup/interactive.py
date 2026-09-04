@@ -168,6 +168,10 @@ def gui_tests():
                 "In TextEdit, type a line, then hold physical Ctrl and tap Right Shift "
                 "(then Ctrl+LeftShift to go back).",
                 "Did the paragraph flip to right-aligned RTL and back?"),
+        GuiTest("Built-in fn key acts as Ctrl",
+                "On the BUILT-IN keyboard, hold the leftmost (fn) key and press C, "
+                "then paste somewhere.",
+                "Did it copy, i.e. behave like the Control key next to it?"),
         GuiTest("Ctrl+Tab switches tabs",
                 "In a browser with 2+ tabs, hold physical Ctrl and press Tab.",
                 "Did it switch to the next tab?"),
