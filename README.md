@@ -46,7 +46,7 @@ off, run `./macsetup doctor` — it reports exactly which setting drifted, and
 | `scroll` | UnnaturalScrollWheels: invert mouse wheel only, trackpad untouched |
 | `finder` | Explorer-like Finder: all extensions, path/status bar, folders first, list view, search current folder |
 | `swiftquit` | Swift Quit settings + running check |
-| `dockdoor` | DockDoor: click the active app's Dock icon to minimize, click again to restore (Windows taskbar); hover previews with controls embedded in the preview frame. Settings live in `config/dockdoor/settings.json` — tune them in DockDoor's UI, then `./macsetup adopt dockdoor` |
+| `dockdoor` | DockDoor: click the active app's Dock icon to minimize, click again to restore (Windows taskbar); hover previews (0.6s deliberate hover, shown for every app including single-window ones) with controls embedded in the preview frame. Settings live in `config/dockdoor/settings.json` — tune them in DockDoor's UI, then `./macsetup adopt dockdoor` |
 | `scripts` | Helper scripts in `~/.local/bin`: tmux launcher, Karabiner wake repair, keep-alive, cursor-aware `macsetup-screenshot`, and `sshwin` (ssh in a new Ghostty window) |
 | `login` | Login items for all of the above, plus a keep-alive agent (`com.macsetup.keepalive`) that relaunches Rectangle, Maccy, UnnaturalScrollWheels, Swift Quit, DockDoor and AltTab if they stop. They have no window and mostly no menu bar icon, so a helper dying is invisible until a shortcut silently stops working — Maccy did exactly that twice, with no crash report. Ghostty is excluded: it's a terminal you open and close deliberately |
 

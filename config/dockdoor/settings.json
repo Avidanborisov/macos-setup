@@ -12,7 +12,7 @@
     "minimize"
   ],
   "fadeOutDuration": 0.2,
-  "ignoreAppsWithSingleWindow": true,
+  "ignoreAppsWithSingleWindow": false,
   "inactivityTimeout": 0.3,
   "openDelay": 0.6,
   "previewHeight": 118.75,
