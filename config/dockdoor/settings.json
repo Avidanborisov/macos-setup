@@ -11,9 +11,9 @@
     "toggleFullScreen",
     "minimize"
   ],
-  "fadeOutDuration": 0.05,
+  "fadeOutDuration": 0.2,
   "ignoreAppsWithSingleWindow": true,
-  "inactivityTimeout": 0.1,
+  "inactivityTimeout": 0.3,
   "openDelay": 0.6,
   "previewHeight": 118.75,
   "previewWidth": 190.0,
