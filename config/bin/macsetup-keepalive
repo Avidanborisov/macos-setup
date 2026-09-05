@@ -1,0 +1,27 @@
+#!/bin/sh
+# macsetup: relaunch managed background apps that are no longer running.
+#
+# These are all "always on" helpers with no window and (mostly) no menu bar
+# icon, so when one dies there is nothing to notice — Maccy has quietly
+# stopped twice with no crash report, leaving Win+V dead until it was spotted.
+# A login item only covers login, so this tops them up while the session runs.
+#
+# Ghostty is deliberately absent: it is a terminal the user opens and closes,
+# not a helper that should be resurrected.
+
+set -u
+
+for app in \
+    "Rectangle" \
+    "Maccy" \
+    "UnnaturalScrollWheels" \
+    "Swift Quit" \
+    "DockDoor" \
+    "AltTab"
+do
+    # pgrep -x matches the executable name, which is the app name for these.
+    if ! pgrep -x "$app" >/dev/null 2>&1; then
+        # -g: don't steal focus from whatever the user is doing.
+        open -g -a "$app" >/dev/null 2>&1 || true
+    fi
+done

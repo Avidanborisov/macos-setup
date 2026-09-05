@@ -1,6 +1,7 @@
 """Per-app configuration: AltTab, Maccy, Rectangle, UnnaturalScrollWheels, login items."""
 
 import json
+import os
 import plistlib
 import sqlite3
 import time
@@ -404,9 +405,31 @@ class SwiftQuit(Component):
 # Login items
 # ---------------------------------------------------------------------------
 
+KEEPALIVE_LABEL = "com.macsetup.keepalive"
+KEEPALIVE_PLIST = (util.HOME / "Library" / "LaunchAgents"
+                   / f"{KEEPALIVE_LABEL}.plist")
+KEEPALIVE_SCRIPT = util.HOME / ".local" / "bin" / "macsetup-keepalive"
+
+
+def _keepalive_plist():
+    """Agent that restarts managed background helpers if they die.
+
+    A login item only covers login. These helpers have no window and mostly no
+    menu bar icon, so one dying goes unnoticed until a shortcut stops working.
+    """
+    return {
+        "Label": KEEPALIVE_LABEL,
+        "ProgramArguments": [str(KEEPALIVE_SCRIPT)],
+        "StartInterval": 60,
+        "RunAtLoad": True,
+        "ProcessType": "Background",
+        "LowPriorityIO": True,
+    }
+
+
 class LoginItems(Component):
     name = "login"
-    description = "Auto-start the setup's apps at login"
+    description = "Auto-start the setup's apps at login, and keep them running"
 
     # AltTab is intentionally absent: it registers launch-at-login itself via
     # SMAppService and deletes any legacy login item on startup (which used to
@@ -421,8 +444,51 @@ class LoginItems(Component):
                           "osascript failed",
                           note="grant Automation permission for System Events")]
         missing = [a for a in self.APPS if a not in current]
-        return [Check("login items", not missing, ", ".join(self.APPS),
-                      "all present" if not missing else "missing: " + ", ".join(missing))]
+        out = [Check("login items", not missing, ", ".join(self.APPS),
+                     "all present" if not missing else "missing: " + ", ".join(missing))]
+        out.extend(self._agent_checks())
+        return out
+
+    def _agent_loaded(self):
+        return util.run_ok(["launchctl", "print",
+                            f"gui/{os.getuid()}/{KEEPALIVE_LABEL}"])
+
+    def _agent_checks(self):
+        want = _keepalive_plist()
+        try:
+            have = plistlib.loads(KEEPALIVE_PLIST.read_bytes())
+        except (OSError, plistlib.InvalidFileException):
+            have = None
+        installed = have == want
+        loaded = self._agent_loaded()
+        return [
+            Check("keep-alive agent installed", installed,
+                  f"{KEEPALIVE_PLIST.name} matching spec",
+                  "installed" if installed else
+                  ("missing" if have is None else "outdated")),
+            Check("keep-alive agent loaded", loaded, "loaded in launchd",
+                  "loaded" if loaded else "not loaded"),
+        ]
+
+    def _apply_agent(self):
+        actions = []
+        want = _keepalive_plist()
+        try:
+            have = plistlib.loads(KEEPALIVE_PLIST.read_bytes())
+        except (OSError, plistlib.InvalidFileException):
+            have = None
+        if have != want:
+            KEEPALIVE_PLIST.parent.mkdir(parents=True, exist_ok=True)
+            KEEPALIVE_PLIST.write_bytes(plistlib.dumps(want))
+            actions.append(f"installed {KEEPALIVE_PLIST.name}")
+        if actions or not self._agent_loaded():
+            domain = f"gui/{os.getuid()}"
+            util.run(["launchctl", "bootout", f"{domain}/{KEEPALIVE_LABEL}"])
+            if util.run_ok(["launchctl", "bootstrap", domain, str(KEEPALIVE_PLIST)]):
+                actions.append("loaded keep-alive agent")
+            else:
+                actions.append("FAILED to load keep-alive agent")
+        return actions
 
     def apply(self):
         current = util.login_items()
@@ -435,6 +501,7 @@ class LoginItems(Component):
                     actions.append(f"added login item: {app}")
                 else:
                     actions.append(f"FAILED to add login item: {app} (app installed?)")
+        actions.extend(self._apply_agent())
         return actions
 
     def warnings(self):

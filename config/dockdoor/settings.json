@@ -14,7 +14,7 @@
   "fadeOutDuration": 0.05,
   "ignoreAppsWithSingleWindow": true,
   "inactivityTimeout": 0.1,
-  "openDelay": 0.1,
+  "openDelay": 0.6,
   "previewHeight": 118.75,
   "previewWidth": 190.0,
   "restoreAllMinimizedWindowsOnDockClick": true,
@@ -26,6 +26,7 @@
   "showWindowTitle": false,
   "trafficLightButtonScale": 0.75,
   "trafficLightButtonsVisibility": "dimmedOnPreviewHover",
+  "useDelayOnlyForInitialOpen": false,
   "useEmbeddedDockPreviewElements": true,
   "windowProcessingDebounceInterval": 0.1
 }

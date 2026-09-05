@@ -40,6 +40,8 @@ class Scripts(FileComponent):
          util.HOME / ".local" / "bin" / "macsetup-screenshot", 0o755),
         (util.CONFIG / "bin" / "sshwin",
          util.HOME / ".local" / "bin" / "sshwin", 0o755),
+        (util.CONFIG / "bin" / "macsetup-keepalive",
+         util.HOME / ".local" / "bin" / "macsetup-keepalive", 0o755),
     ]
 
 
