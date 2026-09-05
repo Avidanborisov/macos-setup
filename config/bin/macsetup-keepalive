@@ -15,7 +15,6 @@ for app in \
     "Rectangle" \
     "Maccy" \
     "UnnaturalScrollWheels" \
-    "Swift Quit" \
     "DockDoor" \
     "AltTab"
 do

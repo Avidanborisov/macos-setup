@@ -366,42 +366,6 @@ class DockDoor(Component):
 
 
 # ---------------------------------------------------------------------------
-# Swift Quit (red X quits the app)
-# ---------------------------------------------------------------------------
-
-class SwiftQuit(Component):
-    name = "swiftquit"
-    description = "Swift Quit: closing an app's last window quits the app"
-    manual = ["Grant Accessibility to Swift Quit"]
-
-    DOMAIN = "onebadidea.Swift-Quit"
-    spec = DefaultsSpec(DOMAIN, {
-        "SwiftQuitSettings": {
-            "excludeBehaviour": "excludeApps",  # quit everything not excluded
-            "launchAtLogin": True,
-            "menubarIconEnabled": True,
-        },
-    })
-
-    def checks(self):
-        out = self.spec.checks()
-        running = util.process_running("Swift Quit")
-        out.append(Check("Swift Quit running", running, "running",
-                         "running" if running else "not running"))
-        return out
-
-    def apply(self):
-        actions = self.spec.apply()
-        if actions:
-            _restart("Swift Quit")
-            actions.append("restarted Swift Quit")
-        elif not util.process_running("Swift Quit"):
-            util.open_app("Swift Quit")
-            actions.append("started Swift Quit")
-        return actions
-
-
-# ---------------------------------------------------------------------------
 # Login items
 # ---------------------------------------------------------------------------
 
@@ -435,7 +399,7 @@ class LoginItems(Component):
     # SMAppService and deletes any legacy login item on startup (which used to
     # look like mysterious drift). Its component checks that it's running.
     APPS = ["Karabiner-Elements", "Rectangle", "Maccy",
-            "UnnaturalScrollWheels", "Swift Quit", "Ghostty", "DockDoor"]
+            "UnnaturalScrollWheels", "Ghostty", "DockDoor"]
 
     def checks(self):
         current = util.login_items()

@@ -14,7 +14,6 @@ CASKS_CORE = [
     "maccy",                # clipboard history (Win+V)
     "ghostty",              # terminal
     "unnaturalscrollwheels",  # reverse mouse wheel only (trackpad stays natural)
-    "swift-quit",           # red X quits the app
     "dockdoor",             # Windows-style Dock: click-to-minimize, hover previews
 ]
 
@@ -29,7 +28,7 @@ FORMULAE = [
 # Installed apps that duplicate/conflict with the managed setup
 CONFLICTS = {
     "scroll-reverser": "duplicates UnnaturalScrollWheels (scroll inversion)",
-    "redquits": "duplicates Swift Quit (quit on red X)",
+    "redquits": "duplicates DockDoor's quit-on-last-window-close (red X quits the app)",
 }
 
 BREW_PREFIX = Path("/opt/homebrew")

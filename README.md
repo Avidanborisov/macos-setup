@@ -30,7 +30,7 @@ off, run `./macsetup doctor` — it reports exactly which setting drifted, and
 
 | Component | What it manages |
 |---|---|
-| `brew` | GUI apps (Karabiner-Elements, Rectangle, AltTab, Maccy, Ghostty, UnnaturalScrollWheels, Swift Quit) and CLI tools |
+| `brew` | GUI apps (Karabiner-Elements, Rectangle, AltTab, Maccy, Ghostty, UnnaturalScrollWheels, DockDoor) and CLI tools |
 | `system` | F-keys as F-keys, English locale, trackpad stays natural, snappy window animations, Writing Direction menu shortcuts |
 | `input` | Keyboard layouts: English (ABC) + Hebrew enabled out of the box (Alt+Shift toggles) |
 | `dock` | Windows-taskbar-style Dock: instant reveal at the bottom of *any* display (a pinned Dock only exists on one screen — macOS limitation), compact tiles, no magnification, minimize into app icon |
@@ -45,10 +45,9 @@ off, run `./macsetup doctor` — it reports exactly which setting drifted, and
 | `rectangle` | Window snapping shortcuts, written straight to defaults (no manual import needed) |
 | `scroll` | UnnaturalScrollWheels: invert mouse wheel only, trackpad untouched |
 | `finder` | Explorer-like Finder: all extensions, path/status bar, folders first, list view, search current folder |
-| `swiftquit` | Swift Quit settings + running check. **Note:** quit-on-last-window-close is actually handled by DockDoor's `quitAppOnWindowClose` — Swift Quit stopped firing after a reboot (running, restarted, still nothing: its Accessibility grant can't be read or set from the CLI), while DockDoor already holds the permissions and does the same job |
-| `dockdoor` | DockDoor: click the active app's Dock icon to minimize, click again to restore (Windows taskbar); hover previews (0.35s hover, no fade-in animation, shown for every app) with controls embedded in the preview frame. Settings live in `config/dockdoor/settings.json` — tune them in DockDoor's UI, then `./macsetup adopt dockdoor` |
+| `dockdoor` | DockDoor: click the active app's Dock icon to minimize, click again to restore (Windows taskbar); **quits an app when its last window closes** (`quitAppOnWindowClose`, the Windows red-X behavior — this replaced Swift Quit, which stopped firing after a reboot and needed a permission we can't manage); hover previews (0.35s hover, no fade-in animation, shown for every app) with controls embedded in the preview frame. Settings live in `config/dockdoor/settings.json` — tune them in DockDoor's UI, then `./macsetup adopt dockdoor` |
 | `scripts` | Helper scripts in `~/.local/bin`: tmux launcher, Karabiner wake repair, keep-alive, cursor-aware `macsetup-screenshot`, and `sshwin` (ssh in a new Ghostty window) |
-| `login` | Login items for all of the above, plus a keep-alive agent (`com.macsetup.keepalive`) that relaunches Rectangle, Maccy, UnnaturalScrollWheels, Swift Quit, DockDoor and AltTab if they stop. They have no window and mostly no menu bar icon, so a helper dying is invisible until a shortcut silently stops working — Maccy did exactly that twice, with no crash report. Ghostty is excluded: it's a terminal you open and close deliberately |
+| `login` | Login items for all of the above, plus a keep-alive agent (`com.macsetup.keepalive`) that relaunches Rectangle, Maccy, UnnaturalScrollWheels, DockDoor and AltTab if they stop. They have no window and mostly no menu bar icon, so a helper dying is invisible until a shortcut silently stops working — Maccy did exactly that twice, with no crash report. Ghostty is excluded: it's a terminal you open and close deliberately |
 
 `./macsetup adopt` pulls live state back into the repo — for the file-based
 components (`keybindings`, `ghostty`, `tmux`, `scripts`) and for `dockdoor`,
@@ -202,7 +201,7 @@ cd macos-setup
 Then the steps only a human can do:
 
 1. **Accessibility** (System Settings → Privacy & Security → Accessibility):
-   Karabiner, Rectangle, AltTab, Swift Quit, Maccy
+   Karabiner, Rectangle, AltTab, Maccy, DockDoor
 2. **Input Monitoring**: karabiner_grabber, karabiner_observer
 3. If macOS blocks background items: System Settings → General → Login Items
 4. VS Code: `"editor.mouseWheelZoom": true` in settings.json
