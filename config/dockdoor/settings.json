@@ -18,6 +18,7 @@
   "openDelay": 0.35,
   "previewHeight": 118.75,
   "previewWidth": 190.0,
+  "quitAppOnWindowClose": true,
   "restoreAllMinimizedWindowsOnDockClick": true,
   "screenCaptureCacheLifespan": 60,
   "shouldHideOnDockItemClick": true,
